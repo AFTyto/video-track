@@ -13,14 +13,9 @@ export const getDomainViaEdge = async (domain: string) => {
     return cached;
   }
 
-  const { rows } =
-    (await conn.execute<EdgeDomainProps>(
-      "SELECT * FROM Domain WHERE slug = ?",
-      [domain],
-    )) || {};
+  const rows = (await conn`SELECT * FROM "Domain" WHERE slug = ${domain}`) as EdgeDomainProps[];
 
-  const result =
-    rows && Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+  const result = rows && Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
   if (result !== null) {
     domainLRUCache.set(domain, result);
   }

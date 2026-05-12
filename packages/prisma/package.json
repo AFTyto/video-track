@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@prisma/client": "6.19.1",
-    "@neondatabase/serverless": "0.10.3"
+    "@neondatabase/serverless": "0.10.3",
+    "@prisma/adapter-neon": "6.19.1"
   },
   "devDependencies": {
     "@types/node": "18.11.9",

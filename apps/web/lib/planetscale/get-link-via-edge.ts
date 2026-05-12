@@ -16,20 +16,14 @@ const getLinkViaEdgeHelper = async ({
 }): Promise<EdgeLinkWithWebhooks | null> => {
   const isCaseSensitive = isCaseSensitiveDomain(domain);
   const keyToQuery = isCaseSensitive
-    ? // for case sensitive domains, we need to encode the key
-      encodeKey(key)
-    : // for non-case sensitive domains, we need to make sure that the key is always URI-decoded + punycode-encoded
-      // (cause that's how we store it in MySQL)
-      punyEncode(decodeURIComponent(key));
+    ? encodeKey(key)
+    : punyEncode(decodeURIComponent(key));
 
-  const { rows } =
-    (await conn.execute(
-      `SELECT Link.*, LinkWebhook.webhookId
-       FROM Link
-       LEFT JOIN LinkWebhook ON Link.id = LinkWebhook.linkId
-       WHERE Link.domain = ? AND Link.\`key\` = ?`,
-      [domain, keyToQuery],
-    )) || {};
+  const rows =
+    (await conn`SELECT Link.*, LinkWebhook.webhookId
+       FROM "Link"
+       LEFT JOIN "LinkWebhook" ON Link.id = LinkWebhook.linkId
+       WHERE Link.domain = ${domain} AND Link.key = ${keyToQuery}`) as EdgeLinkProps[];
 
   if (!rows || !Array.isArray(rows) || rows.length === 0) return null;
 

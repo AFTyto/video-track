@@ -193,10 +193,7 @@ export async function recordClick({
 
         // increment the click count for the link (based on their ID)
         // we have to use planetscale connection directly (not prismaEdge) because of connection pooling
-        conn.execute(
-          "UPDATE Link SET clicks = clicks + 1, lastClicked = NOW() WHERE id = ?",
-          [linkId],
-        ),
+        conn`UPDATE "Link" SET clicks = clicks + 1, lastClicked = NOW() WHERE id = ${linkId}`,
         // if the link is associated with a workspace + has a destination URL
         // increment the usage count for the workspace
         workspaceId &&
@@ -207,10 +204,7 @@ export async function recordClick({
             timestamp: clickData.timestamp,
           }).catch(() => {
             // Fallback on writing directly to the database
-            return conn.execute(
-              "UPDATE Project p JOIN Link l ON p.id = l.projectId SET p.usage = p.usage + 1, p.totalClicks = p.totalClicks + 1 WHERE l.id = ?",
-              [linkId],
-            );
+            return conn`UPDATE "Project" p JOIN "Link" l ON p.id = l."projectId" SET p.usage = p.usage + 1, p.totalClicks = p.totalClicks + 1 WHERE l.id = ${linkId}`;
           }),
 
         programId &&
@@ -222,10 +216,7 @@ export async function recordClick({
             timestamp: new Date().toISOString(),
           }).catch(() => {
             // Fallback on writing directly to the database
-            return conn.execute(
-              "UPDATE ProgramEnrollment SET totalClicks = totalClicks + 1 WHERE programId = ? AND partnerId = ?",
-              [programId, partnerId],
-            );
+            return conn`UPDATE "ProgramEnrollment" SET totalClicks = totalClicks + 1 WHERE "programId" = ${programId} AND "partnerId" = ${partnerId}`;
           }),
       ]);
 
@@ -264,17 +255,14 @@ export async function recordClick({
       // if the link has webhooks enabled, we need to check if the workspace usage has exceeded the limit
       const hasWebhooks = webhookIds && webhookIds.length > 0;
       if (workspaceId && hasWebhooks) {
-        const workspaceRows = await conn.execute(
-          "SELECT usage, usageLimit FROM Project WHERE id = ? LIMIT 1",
-          [workspaceId],
-        );
-
-        const workspaceData =
-          workspaceRows.rows.length > 0
-            ? (workspaceRows.rows[0] as Pick<
+        const workspaceRows = await conn`SELECT usage, "usageLimit" FROM "Project" WHERE id = ${workspaceId} LIMIT 1` as Pick<
                 WorkspaceProps,
                 "usage" | "usageLimit"
-              >)
+              >[];
+
+        const workspaceData =
+          workspaceRows && Array.isArray(workspaceRows) && workspaceRows.length > 0
+            ? workspaceRows[0]
             : null;
 
         const hasExceededUsageLimit =

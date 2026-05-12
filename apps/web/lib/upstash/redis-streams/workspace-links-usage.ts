@@ -32,9 +32,6 @@ export const publishWorkspaceLinksUsageEvent = async (
       error,
     );
     // fallback on writing directly to the database
-    return await conn.execute(
-      "UPDATE Project SET linksUsage = linksUsage + ?, totalLinks = totalLinks + ? WHERE id = ?",
-      [linksCount, linksCount, workspaceId],
-    );
+    return await conn`UPDATE "Project" SET "linksUsage" = "linksUsage" + ${linksCount}, "totalLinks" = "totalLinks" + ${linksCount} WHERE id = ${workspaceId}`;
   }
 };

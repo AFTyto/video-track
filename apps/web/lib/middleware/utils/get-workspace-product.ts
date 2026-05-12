@@ -12,14 +12,11 @@ export const getWorkspaceProduct = async (workspaceSlug: string) => {
       return workspaceProduct;
     }
 
-    const { rows } =
-      (await conn.execute(`SELECT * FROM Project WHERE slug = ?`, [
-        workspaceSlug,
-      ])) || {};
+    const rows = (await conn`SELECT * FROM "Project" WHERE slug = ${workspaceSlug}`) as WorkspaceProps[];
 
     const workspace =
       rows && Array.isArray(rows) && rows.length > 0
-        ? (rows[0] as WorkspaceProps)
+        ? rows[0]
         : null;
 
     workspaceProduct = workspace?.defaultProgramId ? "program" : "links";

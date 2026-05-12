@@ -20,12 +20,9 @@ const opts: JacksonOption = {
       : "/api/auth/saml/callback",
   samlAudience,
   db: {
-    engine: "planetscale",
-    type: "mysql",
+    engine: "pg",
+    type: "postgresql",
     url: process.env.DATABASE_URL as string,
-    ssl: {
-      rejectUnauthorized: false,
-    },
   },
   idpEnabled: true, // to allow folks to SSO directly from their IDP
   scimPath:

@@ -1,5 +1,9 @@
-import { connect } from "@planetscale/database";
+import { neon, neonConfig } from "@neondatabase/serverless";
 
-export const conn = connect({
-  url: process.env.PLANETSCALE_DATABASE_URL || process.env.DATABASE_URL,
-});
+neonConfig.fetchConnectionCache = true;
+
+const neonConn = neon(process.env.DATABASE_URL || "");
+
+export const conn = (strings: TemplateStringsArray, ...values: any[]) => {
+  return neonConn(strings, ...values);
+};

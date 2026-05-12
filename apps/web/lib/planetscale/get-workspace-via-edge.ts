@@ -9,26 +9,27 @@ export const getWorkspaceViaEdge = async ({
   workspaceId: string;
   includeDomains?: boolean;
 }) => {
-  const query = includeDomains
-    ? `
+  const workspaceIdNorm = normalizeWorkspaceId(workspaceId);
+  let rows;
+
+  if (includeDomains) {
+    rows = (await conn`
       SELECT 
         w.*,
         d.slug
-      FROM Project w
-      LEFT JOIN Domain d ON w.id = d.projectId
-      WHERE w.id = ?
+      FROM "Project" w
+      LEFT JOIN "Domain" d ON w.id = d."projectId"
+      WHERE w.id = ${workspaceIdNorm}
       LIMIT 100
-    `
-    : `
-      SELECT 
-        w.* 
-      FROM Project w 
-      WHERE w.id = ? 
+    `) as any[];
+  } else {
+    rows = (await conn`
+      SELECT w.* 
+      FROM "Project" w 
+      WHERE w.id = ${workspaceIdNorm} 
       LIMIT 1
-    `;
-
-  const { rows } =
-    (await conn.execute(query, [normalizeWorkspaceId(workspaceId)])) || {};
+    `) as any[];
+  }
 
   if (!rows || !Array.isArray(rows) || rows.length === 0) {
     return null;
@@ -38,20 +39,16 @@ export const getWorkspaceViaEdge = async ({
     return rows[0] as WorkspaceProps;
   }
 
-  const firstRow = rows[0] as any;
+  const firstRow = rows[0];
   const workspaceData = { ...firstRow };
   const domains: { slug: string }[] = [];
 
-  // Process all rows to collect domains
   rows.forEach((row: any) => {
     if (row.slug) {
-      domains.push({
-        slug: row.slug,
-      });
+      domains.push({ slug: row.slug });
     }
   });
 
-  // Remove domain fields from workspace object
   const { slug, ...cleanWorkspaceData } = workspaceData;
 
   return {
