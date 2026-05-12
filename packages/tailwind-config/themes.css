@@ -1,0 +1,45 @@
+/* Inspiria Studios Brand — VideoTrack Analytics */
+/* Dark studio aesthetic, neon green accent, borders-only depth */
+
+:root,
+.dark {
+  --bg-default: 0 0 0;
+  --bg-muted: 23 23 23;
+  --bg-subtle: 18 18 18;
+  --bg-emphasis: 38 38 38;
+  --bg-inverted: 250 250 250;
+
+  --bg-info: 10 32 48;
+  --bg-success: 0 40 28;
+  --bg-attention: 48 24 8;
+  --bg-warning: 48 32 8;
+  --bg-error: 48 12 12;
+
+  --border-emphasis: 82 82 82;
+  --border-default: 15 15 15;
+  --border-muted: 38 38 38;
+  --border-subtle: 28 28 28;
+
+  --content-inverted: 0 0 0;
+  --content-muted: 82 82 82;
+  --content-subtle: 138 138 138;
+  --content-default: 212 212 212;
+  --content-emphasis: 250 250 250;
+
+  --content-info: 96 189 255;
+  --content-success: 0 255 153;
+  --content-attention: 255 183 77;
+  --content-warning: 255 213 71;
+  --content-error: 255 71 87;
+
+  /* Inspiria Neon Green — primary accent */
+  --accent: 0 255 153;
+  --accent-muted: 0 255 153 0.1;
+  --accent-border: 0 255 153 0.15;
+  --accent-hover: 0 255 153 0.18;
+
+  /* Secondary accent */
+  --accent-2: 99 242 202;
+  --accent-2-muted: 99 242 202 0.1;
+  --accent-2-border: 99 242 202 0.15;
+}

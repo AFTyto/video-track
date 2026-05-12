@@ -1,0 +1,109 @@
+@import "../../../packages/tailwind-config/themes.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Inspiria Studios — Core CSS Variables */
+:root {
+  --accent: #00FF99;
+  --accent-muted: rgba(0, 255, 153, 0.1);
+  --accent-border: rgba(0, 255, 153, 0.15);
+  --accent-hover: rgba(0, 255, 153, 0.18);
+  --bg-canvas: #000000;
+  --bg-surface: rgba(255, 255, 255, 0.03);
+  --bg-surface-hover: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-strong: rgba(255, 255, 255, 0.1);
+  --border-focus: rgba(0, 255, 153, 0.5);
+}
+
+/* Inspiria Scrollbar */
+.vt-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+.vt-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.vt-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vt-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+}
+
+/* Inspiria Card Surface */
+.inspiria-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.inspiria-card:hover {
+  background: var(--bg-surface-hover);
+}
+
+/* Inspiria Accent Border */
+.inspiria-accent-border {
+  border-color: var(--accent-border);
+}
+
+/* Inspiria Neon Glow — inner refraction effect */
+.inspiria-glow {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Hide the react-medium-image-zoom unzoom button */
+[data-rmiz-btn-unzoom] {
+  visibility: hidden;
+}
+
+code {
+  counter-reset: step;
+  counter-increment: step 0;
+}
+
+code .line::before {
+  content: counter(step);
+  counter-increment: step;
+  width: 1rem;
+  padding-right: 1.5rem;
+  display: inline-block;
+  position: sticky;
+  left: 0;
+  background-color: var(--bg-canvas);
+  text-align: right;
+  color: rgba(115, 138, 148, 0.4);
+}
+
+/* Hide the default number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+/* Override Sonner toast border radius from 8px to 10px */
+[data-sonner-toast] {
+  border-radius: 10px !important;
+}
+
+/* Override Sonner toaster to use Inspiria dark theme */
+[data-sonner-toaster] {
+  --toast-bg: #0a0a0a;
+  --toast-border: rgba(255, 255, 255, 0.06);
+}
+
+/* Custom cursor for interactive elements */
+.btn-inspiria:active {
+  transform: translateY(1px) scale(0.99);
+}
