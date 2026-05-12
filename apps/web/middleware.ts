@@ -19,7 +19,6 @@ import { parse } from "./lib/middleware/utils/parse";
 import { supportedWellKnownFiles } from "./lib/well-known";
 
 export const config = {
-  runtime: "nodejs",
   matcher: [
     /*
      * Match all paths except for:
