@@ -7,7 +7,6 @@ import {
 } from "@/lib/swr/use-folder-permissions";
 import useLinks from "@/lib/swr/use-links";
 import useWorkspace from "@/lib/swr/use-workspace";
-import { useWorkspaceStore } from "@/lib/swr/use-workspace-store";
 import { FolderDropdown } from "@/ui/folders/folder-dropdown";
 import {
   FolderInfoPanel,
@@ -21,10 +20,8 @@ import LinksContainer from "@/ui/links/links-container";
 import { LinksDisplayProvider } from "@/ui/links/links-display-provider";
 import { useLinkFilters } from "@/ui/links/use-link-filters";
 import { useAddEditTagModal } from "@/ui/modals/add-edit-tag-modal";
-import { useDotLinkOfferModal } from "@/ui/modals/dot-link-offer-modal";
 import { useExportLinksModal } from "@/ui/modals/export-links-modal";
 import { useLinkBuilder } from "@/ui/modals/link-builder";
-import { useTrialLimitActivateModal } from "@/ui/modals/trial-limit-activate-modal";
 import { ThreeDots } from "@/ui/shared/icons";
 import { SearchBoxPersisted } from "@/ui/shared/search-box";
 import {
@@ -37,12 +34,8 @@ import {
   useRouterStuff,
 } from "@dub/ui";
 import { Download, Globe, TableIcon, Tag } from "@dub/ui/icons";
-import {
-  isWorkspaceBillingTrialActive,
-  type TrialLimitResource,
-} from "@dub/utils";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ReactNode, useEffect } from "react";
 
 export default function WorkspaceLinksClient() {
   const { folderId } = useCurrentFolderId();
@@ -111,48 +104,8 @@ function WorkspaceLinks() {
     "folders.links.write",
   );
 
-  const [dotLinkOfferDismissed, _, { loading: loadingDotLinkOfferDismissed }] =
-    useWorkspaceStore<string>("dotLinkOfferDismissed");
-
-  const [showedDotLinkModal, setShowedDotLinkModal] = useState(false);
-  const { setShowDotLinkOfferModal, DotLinkOfferModal } =
-    useDotLinkOfferModal();
-
-  useEffect(() => {
-    if (showedDotLinkModal) return;
-
-    // We show the .link offer modal if:
-    // - The upgraded modal is not open
-    // - The user has a paid plan (and valid stripe ID)
-    // - The user is not in a billing trial (.link cannot be claimed until trial ends)
-    // - The user has no custom domains
-    // - The user has not claimed their .link domain
-    // - The user has not dismissed the .link offer modal
-    if (
-      !searchParams.has("upgraded") &&
-      workspace.stripeId &&
-      workspace.plan &&
-      workspace.plan !== "free" &&
-      !isWorkspaceBillingTrialActive(workspace.trialEndsAt) &&
-      workspace.domains?.length === 0 &&
-      !workspace.dotLinkClaimed &&
-      !loadingDotLinkOfferDismissed &&
-      dotLinkOfferDismissed === undefined
-    ) {
-      setShowDotLinkOfferModal(true);
-      setShowedDotLinkModal(true);
-    }
-  }, [
-    showedDotLinkModal,
-    searchParams,
-    workspace,
-    loadingDotLinkOfferDismissed,
-    dotLinkOfferDismissed,
-  ]);
-
   return (
     <>
-      <DotLinkOfferModal />
       <LinkBuilder />
       <AddEditTagModal />
       <div className="flex w-full items-center">
@@ -172,13 +125,13 @@ function WorkspaceLinks() {
                     emptyState={{
                       tagIds: (
                         <div className="flex flex-col items-center gap-2 p-2 text-center text-sm">
-                          <div className="flex items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
-                            <Tag className="size-6 text-neutral-700" />
+                          <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-3">
+                            <Tag className="size-6 text-white/40" />
                           </div>
-                          <p className="mt-2 font-medium text-neutral-950">
+                          <p className="mt-2 font-medium text-white/80">
                             No tags found
                           </p>
-                          <p className="mx-auto mt-1 w-full max-w-[180px] text-neutral-700">
+                          <p className="mx-auto mt-1 w-full max-w-[180px] text-white/40">
                             Add tags to organize your links
                           </p>
                           <div>
@@ -192,13 +145,13 @@ function WorkspaceLinks() {
                       ),
                       domain: (
                         <div className="flex flex-col items-center gap-2 p-2 text-center text-sm">
-                          <div className="flex items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
-                            <Globe className="size-6 text-neutral-700" />
+                          <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-3">
+                            <Globe className="size-6 text-white/40" />
                           </div>
-                          <p className="mt-2 font-medium text-neutral-950">
+                          <p className="mt-2 font-medium text-white/80">
                             No domains found
                           </p>
-                          <p className="mx-auto mt-1 w-full max-w-[180px] text-neutral-700">
+                          <p className="mx-auto mt-1 w-full max-w-[180px] text-white/40">
                             Add a custom domain to match your brand
                           </p>
                           <div>
@@ -236,7 +189,7 @@ function WorkspaceLinks() {
               </div>
 
               {isLoading ? (
-                <div className="h-10 w-[2.125rem] animate-pulse rounded-md bg-neutral-200" />
+                <div className="h-10 w-[2.125rem] animate-pulse rounded-md bg-white/10" />
               ) : canCreateLinks ? (
                 <MoreLinkOptions />
               ) : (
@@ -279,8 +232,6 @@ const MoreLinkOptions = () => {
   const [openPopover, setOpenPopover] = useState(false);
   const [_state, setState] = useState<"default" | "import">("default");
   const { ExportLinksModal, setShowExportLinksModal } = useExportLinksModal();
-  const { openTrialLimitModal, TrialLimitActivateModal } =
-    useTrialLimitActivateModal();
 
   useEffect(() => {
     if (!openPopover) setState("default");
@@ -288,17 +239,15 @@ const MoreLinkOptions = () => {
 
   return (
     <>
-      <TrialLimitActivateModal />
       <ExportLinksModal />
       <Popover
         content={
           <div className="w-full md:w-52">
             <div className="grid gap-px p-2">
-              <p className="mb-1.5 mt-1 flex items-center gap-2 px-1 text-xs font-medium text-neutral-500">
+              <p className="mb-1.5 mt-1 flex items-center gap-2 px-1 text-xs font-medium text-white/30">
                 Import Links
               </p>
               <ImportOption
-                openTrialLimitModal={openTrialLimitModal}
                 onClick={() => {
                   setOpenPopover(false);
                   queryParams({
@@ -320,7 +269,6 @@ const MoreLinkOptions = () => {
                 />
               </ImportOption>
               <ImportOption
-                openTrialLimitModal={openTrialLimitModal}
                 onClick={() => {
                   setOpenPopover(false);
                   queryParams({
@@ -342,7 +290,6 @@ const MoreLinkOptions = () => {
                 />
               </ImportOption>
               <ImportOption
-                openTrialLimitModal={openTrialLimitModal}
                 onClick={() => {
                   setOpenPopover(false);
                   queryParams({
@@ -364,7 +311,6 @@ const MoreLinkOptions = () => {
                 />
               </ImportOption>
               <ImportOption
-                openTrialLimitModal={openTrialLimitModal}
                 onClick={() => {
                   setOpenPopover(false);
                   queryParams({
@@ -380,9 +326,9 @@ const MoreLinkOptions = () => {
                 />
               </ImportOption>
             </div>
-            <div className="border-t border-neutral-200" />
+            <div className="border-t border-white/10" />
             <div className="grid gap-px p-2">
-              <p className="mb-1.5 mt-1 flex items-center gap-2 px-1 text-xs font-medium text-neutral-500">
+              <p className="mb-1.5 mt-1 flex items-center gap-2 px-1 text-xs font-medium text-white/30">
                 Export Links
               </p>
               <button
@@ -390,7 +336,7 @@ const MoreLinkOptions = () => {
                   setOpenPopover(false);
                   setShowExportLinksModal(true);
                 }}
-                className="w-full rounded-md p-2 hover:bg-neutral-100 active:bg-neutral-200"
+                className="w-full rounded-md p-2 hover:bg-white/10 active:bg-white/15 text-white/70"
               >
                 <IconMenu
                   text="Export as CSV"
@@ -408,7 +354,7 @@ const MoreLinkOptions = () => {
           onClick={() => setOpenPopover(!openPopover)}
           variant="secondary"
           className="w-auto px-2"
-          icon={<ThreeDots className="h-5 w-5 text-neutral-500" />}
+          icon={<ThreeDots className="h-5 w-5 text-white/30" />}
         />
       </Popover>
     </>
@@ -418,41 +364,14 @@ const MoreLinkOptions = () => {
 function ImportOption({
   children,
   onClick,
-  openTrialLimitModal,
 }: {
   children: ReactNode;
   onClick: () => void;
-  openTrialLimitModal: (resource: TrialLimitResource) => void;
 }) {
-  const { slug, exceededLinks, plan, nextPlan, trialEndsAt } = useWorkspace();
-  const trialActive = isWorkspaceBillingTrialActive(trialEndsAt);
-
-  return exceededLinks && plan !== "enterprise" ? (
-    <Tooltip
-      content={
-        trialActive ? (
-          <TooltipContent
-            title="Your workspace has exceeded its monthly links limit. We're still collecting data on your existing links, but you need to upgrade to create more links."
-            cta="Start paid plan"
-            onClick={() => openTrialLimitModal("links")}
-          />
-        ) : (
-          <TooltipContent
-            title="Your workspace has exceeded its monthly links limit. We're still collecting data on your existing links, but you need to upgrade to create more links."
-            cta={nextPlan ? `Upgrade to ${nextPlan.name}` : "Contact support"}
-            href={`/${slug}/upgrade`}
-          />
-        )
-      }
-    >
-      <div className="flex w-full cursor-not-allowed items-center justify-between space-x-2 rounded-md p-2 text-sm text-neutral-400 [&_img]:grayscale">
-        {children}
-      </div>
-    </Tooltip>
-  ) : (
+  return (
     <button
       onClick={onClick}
-      className="w-full rounded-md p-2 hover:bg-neutral-100 active:bg-neutral-200"
+      className="w-full rounded-md p-2 hover:bg-white/10 active:bg-white/15 text-white/70"
     >
       {children}
     </button>

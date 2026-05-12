@@ -1,64 +1,33 @@
 "use client";
 
 import { getPlanCapabilities } from "@/lib/plan-capabilities";
-import { REFERRAL_ENABLED_PROGRAM_IDS } from "@/lib/referrals/constants";
-import {
-  SubmissionsCountByStatus,
-  useBountySubmissionsCount,
-} from "@/lib/swr/use-bounty-submissions-count";
-import { useFraudGroupCount } from "@/lib/swr/use-fraud-groups-count";
-import { usePartnerMessagesCount } from "@/lib/swr/use-partner-messages-count";
-import { usePayoutsCount } from "@/lib/swr/use-payouts-count";
-import useProgram from "@/lib/swr/use-program";
-import { useProgramReferralsCount } from "@/lib/swr/use-program-referrals-count";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { type Icon, useRouterStuff } from "@dub/ui";
 import {
   Bell,
-  Brush,
   ConnectedDots,
   CubeSettings,
-  DiamondTurnRight,
-  Folder,
-  Gauge6,
   Gear2,
-  Gift,
   Globe,
-  InvoiceDollar,
   Key,
-  LifeRing,
   LinesY as LinesYStatic,
   MarketingTarget,
-  MoneyBills2,
-  Msgs,
-  PaperPlane,
   Receipt2,
   ShieldCheck,
-  ShieldKeyhole,
-  Sliders,
   StackY3,
   Tag,
-  Trophy,
-  UserCheck,
-  UserPlus,
-  Users,
   Users6,
   Webhook,
 } from "@dub/ui/icons";
-import { isWorkspaceBillingTrialActive } from "@dub/utils";
 import { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import { useParams, usePathname } from "next/navigation";
 import { ReactNode, useMemo } from "react";
 import { Compass } from "./icons/compass";
-import { ConnectedDots4 } from "./icons/connected-dots4";
 import { CursorRays } from "./icons/cursor-rays";
 import { Hyperlink } from "./icons/hyperlink";
 import { LinesY } from "./icons/lines-y";
-import { User } from "./icons/user";
 import { SidebarNav, SidebarNavAreas, SidebarNavGroups } from "./sidebar-nav";
-import { SidebarUsage } from "./sidebar-usage";
-import { useProgramApplicationsCount } from "./use-program-applications-count";
 import { WorkspaceDropdown } from "./workspace-dropdown";
 
 type SidebarNavData = {
@@ -287,9 +256,9 @@ const NAV_AREAS: SidebarNavAreas<SidebarNavData> = {
     ],
   }),
   // short links
-  links: ({ slug, pathname, queryString, showNews }) => ({
+  links: ({ slug, pathname, queryString }) => ({
     title: "Video Links",
-    showNews,
+    showNews: false,
     direction: "left",
     content: [
       {
@@ -300,31 +269,14 @@ const NAV_AREAS: SidebarNavAreas<SidebarNavData> = {
             href: `/${slug}/links${pathname === `/${slug}/links` ? "" : queryString}`,
             isActive: (pathname: string, href: string) => {
               const basePath = href.split("?")[0];
-
-              // Exact match for the base links page
               if (pathname === basePath) return true;
-
-              // Check if it's a link detail page (path segment after base contains a dot for domain)
               if (pathname.startsWith(basePath + "/")) {
-                const nextSegment = pathname
-                  .slice(basePath.length + 1)
-                  .split("/")[0];
+                const nextSegment = pathname.slice(basePath.length + 1).split("/")[0];
                 return nextSegment.includes(".");
               }
-
               return false;
             },
           },
-          {
-            name: "Domains",
-            icon: Globe,
-            href: `/${slug}/links/domains`,
-          },
-        ],
-      },
-      {
-        name: "Insights",
-        items: [
           {
             name: "Analytics",
             icon: LinesY,
@@ -336,29 +288,9 @@ const NAV_AREAS: SidebarNavAreas<SidebarNavData> = {
             href: `/${slug}/events${pathname === `/${slug}/events` ? "" : queryString}`,
           },
           {
-            name: "Customers",
-            icon: User,
-            href: `/${slug}/customers`,
-          },
-        ],
-      },
-      {
-        name: "Library",
-        items: [
-          {
-            name: "Folders",
-            icon: Folder,
-            href: `/${slug}/links/folders`,
-          },
-          {
             name: "Tags",
             icon: Tag,
             href: `/${slug}/links/tags`,
-          },
-          {
-            name: "UTM Templates",
-            icon: DiamondTurnRight,
-            href: `/${slug}/links/utm`,
           },
         ],
       },
@@ -504,36 +436,8 @@ export function AppSidebarNav({
       ? "userSettings"
       : pathname.startsWith(`/${slug}/settings`)
         ? "workspaceSettings"
-        : pathname.includes("/program/campaigns/") ||
-            pathname.includes("/program/messages/") ||
-            pathname.endsWith("/program/payouts/success")
-          ? null
-          : pathname.startsWith(`/${slug}/program`)
-            ? "program"
-            : "links";
+        : "links";
   }, [slug, pathname]);
-
-  const { program } = useProgram({
-    enabled: Boolean(currentArea === "program" && defaultProgramId),
-  });
-
-  const { payoutsCount: pendingPayoutsCount } = usePayoutsCount({
-    eligibility: "eligible",
-    status: "pending",
-    ignoreParams: true,
-    enabled: Boolean(currentArea === "program" && defaultProgramId),
-  });
-
-  const applicationsCount = useProgramApplicationsCount({
-    enabled: Boolean(currentArea === "program" && defaultProgramId),
-  });
-
-  const { submissionsCount } = useBountySubmissionsCount<
-    SubmissionsCountByStatus[]
-  >({
-    ignoreParams: true,
-    enabled: Boolean(currentArea === "program" && defaultProgramId),
-  });
 
   const submittedBountiesCount =
     submissionsCount?.find(({ status }) => status === "submitted")?.count || 0;
