@@ -6,7 +6,7 @@
   "module": "./index.ts",
   "types": "./index.ts",
   "scripts": {
-    "generate": "npx prisma generate --schema=./schema",
+    "generate": "npx prisma generate --schema=./schema/schema.prisma",
     "push": "npx prisma db push --schema=./schema",
     "studio": "npx prisma studio --schema=./schema --browser none",
     "prebuild": "pnpm run generate",

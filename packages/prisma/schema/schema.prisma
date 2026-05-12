@@ -90,3 +90,2249 @@ model Session {
 
   @@index([userId])
 }
+
+model ActivityLog {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  programId          String
+  parentResourceType String?
+  parentResourceId   String?
+  resourceType       String
+  resourceId         String
+  userId             String?
+  action             String
+  description        String?
+  batchId            String?
+  changeSet          Json?
+  createdAt          DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([resourceType, resourceId])
+  @@index(userId)
+}
+
+enum ProgramApplicationRejectionReason {
+  needsMoreDetail
+  doesNotMeetRequirements
+  notTheRightFit
+  other
+}
+
+model ProgramApplication {
+  id              String                             @id @default(cuid())
+  programId       String
+  groupId         String?
+  name            String
+  email           String
+  country         String?
+  website         String?
+  youtube         String?
+  twitter         String?
+  linkedin        String?
+  instagram       String?
+  tiktok          String?
+  formData        Json?
+  userId          String? // user who reviewed the application
+  rejectionReason ProgramApplicationRejectionReason?
+  rejectionNote   String?
+  reviewedAt      DateTime?
+  createdAt       DateTime                           @default(now())
+  updatedAt       DateTime                           @updatedAt
+
+  program                  Program                   @relation(fields: [programId], references: [id])
+  partnerGroup             PartnerGroup?             @relation(fields: [groupId], references: [id])
+  enrollment               ProgramEnrollment?
+  user                     User?                     @relation(fields: [userId], references: [id])
+  programApplicationEvents ProgramApplicationEvent[]
+
+  @@index(programId)
+  @@index(groupId)
+  @@index(email)
+  @@index(userId)
+}
+
+model ProgramApplicationEvent {
+  id        String @id @default(cuid())
+  programId String
+
+  visitedAt   DateTime  @default(now())
+  startedAt   DateTime?
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+
+  country             String?
+  referralSource      String // e.g. company.com, linkedin.com, marketplace, direct
+  referredByPartnerId String? // pn_xxx – partner ID who referred the application
+  metadata            Json? // full URL, ip address, user agent, geo/device data etc.
+
+  programApplicationId String?
+  partnerId            String?
+
+  referredByPartner Partner?            @relation(fields: [referredByPartnerId], references: [id])
+  application       ProgramApplication? @relation(fields: [programApplicationId], references: [id])
+
+  @@unique([programId, partnerId])
+  @@index([programId, visitedAt])
+  @@index([programId, startedAt])
+  @@index([programId, submittedAt])
+  @@index([programId, approvedAt])
+  @@index([programId, country])
+  @@index([programId, referralSource])
+  @@index([programId, referredByPartnerId])
+  @@index(referredByPartnerId)
+  @@index(programApplicationId)
+}
+
+enum BountyType {
+  performance
+  submission
+}
+
+enum BountyPerformanceScope {
+  new
+  lifetime
+}
+
+enum BountySubmissionStatus {
+  draft
+  submitted
+  approved
+  rejected
+}
+
+enum BountySubmissionRejectionReason {
+  invalidProof
+  duplicateSubmission
+  outOfTimeWindow
+  didNotMeetCriteria
+  other
+}
+
+enum BountySubmissionFrequency {
+  day
+  week
+  month
+}
+
+model Bounty {
+  id                        String                     @id @default(cuid())
+  programId                 String
+  workflowId                String?                    @unique
+  name                      String
+  description               String?
+  type                      BountyType
+  startsAt                  DateTime
+  endsAt                    DateTime?
+  submissionsOpenAt         DateTime?
+  submissionFrequency       BountySubmissionFrequency?
+  maxSubmissions            Int                        @default(1)
+  rewardAmount              Int?
+  rewardDescription         String?
+  performanceScope          BountyPerformanceScope?
+  submissionRequirements    Json?
+  socialMetricsLastSyncedAt DateTime?
+  archivedAt                DateTime?
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+
+  submissions BountySubmission[]
+  groups      BountyGroup[]
+  program     Program             @relation(fields: [programId], references: [id], onDelete: Cascade)
+  workflow    Workflow?           @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  emails      NotificationEmail[]
+
+  @@index(programId)
+}
+
+model BountyGroup {
+  id       String @id @default(cuid())
+  bountyId String
+  groupId  String
+
+  bounty       Bounty       @relation(fields: [bountyId], references: [id], onDelete: Cascade)
+  partnerGroup PartnerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([bountyId, groupId])
+  @@index([groupId])
+}
+
+model BountySubmission {
+  id                        String                           @id @default(cuid())
+  programId                 String
+  partnerId                 String
+  bountyId                  String
+  performanceCount          BigInt?
+  socialMetricCount         Int?
+  commissionId              String?                          @unique
+  userId                    String?
+  description               String?
+  status                    BountySubmissionStatus           @default(draft)
+  rejectionReason           BountySubmissionRejectionReason?
+  rejectionNote             String?
+  files                     Json?
+  urls                      Json?
+  periodNumber              Int                              @default(1)
+  socialMetricsLastSyncedAt DateTime?
+  completedAt               DateTime?
+  reviewedAt                DateTime?
+  createdAt                 DateTime                         @default(now())
+  updatedAt                 DateTime                         @updatedAt
+
+  bounty            Bounty             @relation(fields: [bountyId], references: [id], onDelete: Cascade)
+  partner           Partner            @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  commission        Commission?        @relation(fields: [commissionId], references: [id], onDelete: Cascade)
+  program           Program            @relation(fields: [programId], references: [id], onDelete: Cascade)
+  user              User?              @relation(fields: [userId], references: [id])
+  programEnrollment ProgramEnrollment? @relation(fields: [programId, partnerId], references: [programId, partnerId], onDelete: Cascade)
+
+  @@unique([bountyId, partnerId, periodNumber])
+  @@index([programId, partnerId])
+  @@index(partnerId)
+  @@index(userId)
+  @@index(status)
+}
+
+enum CampaignType {
+  marketing
+  transactional
+}
+
+enum CampaignStatus {
+  draft
+
+  // Transactional
+  active
+  paused
+
+  // Marketing
+  scheduled
+  sending
+  sent
+  canceled
+}
+
+model Campaign {
+  id              String              @id @default(cuid())
+  programId       String
+  workflowId      String?             @unique
+  userId          String
+  qstashMessageId String?             @unique
+  type            CampaignType
+  status          CampaignStatus      @default(draft)
+  name            String
+  subject         String
+  preview         String?
+  from            String?
+  bodyJson        Json
+  scheduledAt     DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  program         Program             @relation(fields: [programId], references: [id])
+  workflow        Workflow?           @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  groups          CampaignGroup[]
+  emails          NotificationEmail[]
+
+  @@index(programId)
+}
+
+model CampaignGroup {
+  id         String @id @default(cuid())
+  campaignId String
+  groupId    String
+
+  campaign     Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  partnerGroup PartnerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, groupId])
+  @@index(groupId)
+}
+
+model PartnerComment {
+  id        String   @id @default(cuid())
+  programId String
+  partnerId String
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([programId, partnerId])
+  @@index(partnerId)
+  @@index(createdAt)
+  @@index(userId)
+}
+
+enum CommissionStatus {
+  pending
+  processed
+  paid
+  refunded
+  duplicate
+  fraud
+  canceled
+}
+
+enum CommissionType {
+  click
+  lead
+  sale
+  custom
+}
+
+model Commission {
+  id          String           @id @default(cuid())
+  programId   String
+  partnerId   String
+  rewardId    String?
+  linkId      String?
+  payoutId    String?
+  invoiceId   String? // only for sales (idempotency key, each sale event is associated with a unique invoice)
+  customerId  String? // only for leads and sales
+  eventId     String?          @unique // only for leads and sales
+  description String?
+  type        CommissionType
+  amount      Int // only for sales (amount of the sale event)
+  quantity    Int // only for clicks/leads (quantity of the event)
+  earnings    Int              @default(0) // amount earned by the partner
+  currency    String           @default("usd")
+  status      CommissionStatus @default(pending)
+  userId      String? // user who created the manual commission
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  program           Program           @relation(fields: [programId], references: [id])
+  partner           Partner           @relation(fields: [partnerId], references: [id])
+  programEnrollment ProgramEnrollment @relation(fields: [programId, partnerId], references: [programId, partnerId])
+  payout            Payout?           @relation(fields: [payoutId], references: [id])
+  link              Link?             @relation(fields: [linkId], references: [id])
+  customer          Customer?         @relation(fields: [customerId], references: [id])
+  reward            Reward?           @relation(fields: [rewardId], references: [id])
+  bountySubmission  BountySubmission?
+  user              User?             @relation(fields: [userId], references: [id])
+
+  @@unique([invoiceId, programId])
+  @@index([earnings, programId, partnerId, status]) // old index
+  @@index([programId, partnerId]) // for programEnrollment relation (used in cron/payouts/aggregate-due-commissions)
+  @@index([programId, status, createdAt, amount, earnings]) // for program/commissions (scoped by programId)
+  @@index([createdAt, status, programId, earnings]) // for admin/commissions
+  @@index([partnerId, customerId])
+  @@index(payoutId)
+  @@index(customerId)
+  @@index(linkId)
+  @@index(status)
+  @@index(rewardId)
+  @@index(userId)
+}
+
+model Customer {
+  id               String  @id @default(cuid())
+  name             String?
+  email            String?
+  avatar           String?
+  externalId       String?
+  stripeCustomerId String? @unique
+
+  linkId    String?
+  clickId   String?
+  clickedAt DateTime?
+  country   String?
+
+  sales                  Int       @default(0)
+  saleAmount             BigInt    @default(0)
+  firstSaleAt            DateTime?
+  subscriptionCanceledAt DateTime?
+
+  projectId        String
+  projectConnectId String?
+
+  programId String?
+  partnerId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project           Project            @relation(fields: [projectId], references: [id])
+  link              Link?              @relation(fields: [linkId], references: [id])
+  program           Program?           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  partner           Partner?           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  programEnrollment ProgramEnrollment? @relation(fields: [programId, partnerId], references: [programId, partnerId])
+  commissions       Commission[]
+  fraudEvents       FraudEvent[]
+  referrals         PartnerReferral[]
+
+  @@unique([projectId, externalId])
+  @@unique([projectConnectId, externalId])
+  @@index([projectId, email])
+  @@index([projectId, createdAt])
+  @@index([projectId, saleAmount])
+  @@index([projectId, firstSaleAt])
+  @@index([projectId, subscriptionCanceledAt])
+  @@index([programId, partnerId])
+  @@index(partnerId)
+  @@index(linkId)
+  @@index(country)
+}
+
+model Dashboard {
+  id String @id @default(cuid())
+
+  link   Link?   @relation(fields: [linkId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  linkId String? @unique
+
+  folder   Folder? @relation(fields: [folderId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  folderId String? @unique
+
+  // Project that the share link belongs to
+  project   Project? @relation(fields: [projectId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  projectId String?
+
+  // User who created the shared dashboard
+  user   User?   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  userId String?
+
+  // additional link configurations
+  doIndex         Boolean @default(false) // whether to index the share link on Google or not
+  password        String? // password to access the share link
+  showConversions Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index(projectId)
+  @@index(userId)
+}
+
+enum DiscountProvider {
+  stripe
+  shopify
+}
+
+model Discount {
+  id                     String           @id @default(cuid())
+  programId              String
+  amount                 Int              @default(0)
+  type                   RewardStructure  @default(percentage)
+  maxDuration            Int? // in months (0 -> one-time purchase, 1, 3, 6, 12, 18, 24, 36, 48 -> months, null -> lifetime)
+  description            String?
+  couponId               String?
+  couponTestId           String?
+  autoProvisionEnabledAt DateTime? // Auto create discount codes for partners when they join the group
+  provider               DiscountProvider @default(stripe)
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  programEnrollments ProgramEnrollment[]
+  program            Program             @relation("ProgramDiscounts", fields: [programId], references: [id])
+  partnerGroup       PartnerGroup?
+  discountCodes      DiscountCode[]
+
+  @@index(programId)
+}
+
+model DiscountCode {
+  id         String   @id @default(cuid())
+  code       String
+  programId  String
+  discountId String?
+  partnerId  String
+  linkId     String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  program           Program            @relation(fields: [programId], references: [id], onDelete: Cascade)
+  discount          Discount?          @relation(fields: [discountId], references: [id], onDelete: SetNull)
+  partner           Partner            @relation(fields: [partnerId], references: [id])
+  link              Link               @relation(fields: [linkId], references: [id])
+  programEnrollment ProgramEnrollment? @relation(fields: [programId, partnerId], references: [programId, partnerId])
+
+  @@unique([programId, code])
+  @@index([programId, partnerId])
+  @@index(discountId)
+  @@index(partnerId)
+}
+
+model Domain {
+  id                      String   @id @default(cuid())
+  slug                    String   @unique
+  verified                Boolean  @default(false)
+  placeholder             String?
+  expiredUrl              String? // URL to redirect to for expired links
+  notFoundUrl             String? // URL to redirect to for links that don't exist
+  primary                 Boolean  @default(false)
+  archived                Boolean  @default(false)
+  lastChecked             DateTime @default(now())
+  logo                    String?
+  appleAppSiteAssociation Json?
+  assetLinks              Json?
+  deepviewData            Json?    @default("{}")
+
+  linkRetentionDays Int? // default is null (links are retained forever)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  projectId        String?
+  project          Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  links            Link[]
+  registeredDomain RegisteredDomain?
+  partnerProgram   Program?
+
+  @@index(projectId)
+  @@index(lastChecked(sort: Asc))
+}
+
+model RegisteredDomain {
+  id                    String    @id @default(cuid())
+  slug                  String
+  projectId             String
+  domainId              String?   @unique
+  autoRenewalDisabledAt DateTime?
+  renewalFee            Int       @default(1200) // $12
+  expiresAt             DateTime
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+  domain  Domain? @relation(fields: [domainId], references: [id], onDelete: SetNull)
+
+  @@index(projectId)
+  @@index(expiresAt(sort: Asc))
+}
+
+model DefaultDomains {
+  id          String  @id @default(cuid())
+  dubsh       Boolean @default(true)
+  chatgpt     Boolean @default(true)
+  sptifi      Boolean @default(true)
+  gitnew      Boolean @default(true)
+  callink     Boolean @default(true)
+  amznid      Boolean @default(true)
+  ggllink     Boolean @default(true)
+  figpage     Boolean @default(true)
+  loooooooong Boolean @default(false)
+  projectId   String  @unique
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+enum EmailDomainStatus {
+  pending
+  verified
+  failed
+  temporary_failure
+  not_started
+}
+
+model EmailDomain {
+  id             String            @id @default(cuid())
+  workspaceId    String
+  programId      String
+  slug           String            @unique
+  status         EmailDomainStatus @default(pending)
+  resendDomainId String?           @unique
+  lastChecked    DateTime          @default(now())
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@index(lastChecked(sort: Asc))
+  @@index(programId)
+}
+
+enum FolderType {
+  default
+  mega
+}
+
+enum FolderAccessLevel {
+  read // can view the links
+  write // can view and move links
+}
+
+enum FolderUserRole {
+  owner // full control
+  editor // can move links to the folder
+  viewer // can view the links
+}
+
+model Folder {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  projectId   String
+  type        FolderType         @default(default)
+  accessLevel FolderAccessLevel? // Access level of the folder within the workspace
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  project        Project               @relation(fields: [projectId], references: [id])
+  links          Link[]
+  users          FolderUser[]
+  accessRequests FolderAccessRequest[]
+  dashboard      Dashboard?
+
+  @@unique([name, projectId])
+  @@index(projectId)
+}
+
+model FolderUser {
+  id        String          @id @default(cuid())
+  folderId  String
+  userId    String
+  role      FolderUserRole?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  folder Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([folderId, userId])
+  @@index(userId)
+}
+
+model FolderAccessRequest {
+  id        String   @id @default(cuid())
+  folderId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  folder Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([folderId, userId])
+  @@index(userId)
+}
+
+enum FraudEventStatus {
+  pending
+  resolved
+}
+
+enum FraudRuleType {
+  customerEmailMatch
+  customerEmailSuspiciousDomain
+  referralSourceBanned
+  paidTrafficDetected
+  partnerCrossProgramBan // Cross-program ban from other programs
+  partnerDuplicateAccount // Duplicate identity with other partners
+}
+
+model FraudRule {
+  id         String        @id @default(cuid())
+  programId  String
+  type       FraudRuleType
+  config     Json?
+  disabledAt DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  program Program? @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@unique([programId, type])
+}
+
+model FraudEventGroup {
+  id               String           @id @default(cuid())
+  programId        String
+  partnerId        String
+  type             FraudRuleType
+  lastEventAt      DateTime?
+  eventCount       Int              @default(0)
+  userId           String?
+  resolutionReason String?
+  resolvedAt       DateTime?
+  status           FraudEventStatus @default(pending)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  program           Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  partner           Partner           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  programEnrollment ProgramEnrollment @relation(fields: [programId, partnerId], references: [programId, partnerId], onDelete: Cascade)
+  fraudEvents       FraudEvent[]
+  user              User?             @relation(fields: [userId], references: [id])
+
+  @@index([programId, partnerId, type, status])
+  @@index(partnerId)
+  @@index(userId)
+}
+
+model FraudEvent {
+  id                String   @id @default(cuid())
+  fraudEventGroupId String
+  programId         String
+  partnerId         String
+  linkId            String?
+  customerId        String?
+  eventId           String?
+  sourceProgramId   String? // The program that originated the ban/fraud report
+  hash              String
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  fraudEventGroup FraudEventGroup @relation(fields: [fraudEventGroupId], references: [id], onDelete: Cascade)
+  partner         Partner         @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  customer        Customer?       @relation(fields: [customerId], references: [id])
+  link            Link?           @relation(fields: [linkId], references: [id])
+  sourceProgram   Program?        @relation("SourceFraudEvents", fields: [sourceProgramId], references: [id])
+
+  @@index([programId, partnerId, customerId])
+  @@index(partnerId)
+  @@index(customerId)
+  @@index(linkId)
+  @@index(eventId)
+  @@index(hash)
+  @@index(sourceProgramId)
+}
+
+enum FraudAlertStatus {
+  pending
+  confirmed
+  dismissed
+}
+
+model FraudAlert {
+  id           String           @id @default(cuid())
+  partnerId    String
+  programId    String
+  reason       String
+  status       FraudAlertStatus @default(pending)
+  reviewedById String?
+  reviewedAt   DateTime?
+  reviewNote   String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  partner           Partner           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  program           Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  reviewedBy        User?             @relation("FraudAlertReviewer", fields: [reviewedById], references: [id])
+  programEnrollment ProgramEnrollment @relation(fields: [programId, partnerId], references: [programId, partnerId], onDelete: Cascade)
+
+  @@index(partnerId)
+  @@index(status)
+  @@index(createdAt)
+}
+
+enum PartnerLinkStructure {
+  short
+  query
+  path
+}
+
+model PartnerGroup {
+  id                           String               @id @default(cuid())
+  programId                    String
+  name                         String
+  slug                         String
+  color                        String?
+  clickRewardId                String?              @unique
+  leadRewardId                 String?              @unique
+  saleRewardId                 String?              @unique
+  discountId                   String?              @unique
+  linkStructure                PartnerLinkStructure @default(short)
+  additionalLinks              Json?
+  maxPartnerLinks              Int                  @default(0)
+  applicationFormData          Json?
+  applicationFormPublishedAt   DateTime?
+  landerData                   Json?
+  landerPublishedAt            DateTime?
+  logo                         String?
+  wordmark                     String?
+  brandColor                   String?
+  holdingPeriodDays            Int                  @default(0) // number of days to wait before earnings are added to a payout
+  autoApprovePartnersEnabledAt DateTime?
+  workflowId                   String?              @unique
+  utmTemplateId                String?              @unique
+  createdAt                    DateTime             @default(now())
+  updatedAt                    DateTime             @updatedAt
+
+  program                  Program                   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  clickReward              Reward?                   @relation("ClickReward", fields: [clickRewardId], references: [id])
+  leadReward               Reward?                   @relation("LeadReward", fields: [leadRewardId], references: [id])
+  saleReward               Reward?                   @relation("SaleReward", fields: [saleRewardId], references: [id])
+  discount                 Discount?                 @relation(fields: [discountId], references: [id])
+  partners                 ProgramEnrollment[]
+  applications             ProgramApplication[]
+  bounties                 BountyGroup[]
+  campaigns                CampaignGroup[]
+  workflow                 Workflow?                 @relation(fields: [workflowId], references: [id])
+  utmTemplate              UtmTemplate?              @relation(fields: [utmTemplateId], references: [id])
+  partnerGroupDefaultLinks PartnerGroupDefaultLink[]
+
+  @@unique([programId, slug])
+}
+
+model PartnerGroupDefaultLink {
+  id        String   @id @default(cuid())
+  programId String
+  groupId   String
+  domain    String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  program      Program      @relation(fields: [programId], references: [id], onDelete: Cascade)
+  partnerGroup PartnerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  links        Link[]
+
+  @@unique([groupId, url])
+  @@index(programId)
+}
+
+model Integration {
+  id          String   @id @default(cuid())
+  userId      String?
+  projectId   String
+  name        String
+  slug        String   @unique
+  description String?
+  readme      String?
+  developer   String
+  website     String
+  logo        String?
+  screenshots Json?
+  verified    Boolean  @default(false)
+  installUrl  String?
+  guideUrl    String?
+  category    String?
+  comingSoon  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user          User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  project       Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  oAuthApp      OAuthApp?
+  installations InstalledIntegration[]
+
+  @@index(projectId)
+  @@index(userId)
+}
+
+model InstalledIntegration {
+  id            String   @id @default(cuid())
+  userId        String // user who installed the integration
+  integrationId String // integration that was installed
+  projectId     String // workspace where integration was installed
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  credentials   Json?
+  settings      Json?
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  integration   Integration         @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  project       Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  refreshTokens OAuthRefreshToken[]
+  accessTokens  RestrictedToken[]
+  webhooks      Webhook[]
+
+  @@unique([userId, integrationId, projectId])
+  @@index(projectId)
+  @@index(integrationId)
+}
+
+enum InvoiceStatus {
+  processing
+  completed
+  failed
+}
+
+enum InvoiceType {
+  partnerPayout
+  domainRenewal
+}
+
+enum PaymentMethod {
+  card
+  ach
+  ach_fast
+  sepa
+  acss
+}
+
+model Invoice {
+  id                   String            @id @default(cuid())
+  programId            String?
+  workspaceId          String
+  number               String?           @unique // This starts with the customer's unique invoicePrefix
+  status               InvoiceStatus     @default(processing)
+  type                 InvoiceType       @default(partnerPayout)
+  payoutMode           ProgramPayoutMode @default(internal)
+  paymentMethod        PaymentMethod?
+  amount               Int               @default(0) // amount in usd cents
+  fee                  Int               @default(0) // fee in usd cents
+  total                Int               @default(0) // amount + fee in usd cents
+  externalAmount       Int               @default(0) // amount in usd cents for external payouts
+  receiptUrl           String?
+  failedReason         String?
+  registeredDomains    Json? // Array of RegisteredDomain
+  stripeChargeMetadata Json? // Stripe charge metadata
+  failedAttempts       Int               @default(0) // number of failed attempts to charge the invoice
+  createdAt            DateTime          @default(now())
+  paidAt               DateTime?
+
+  payouts   Payout[]
+  program   Program? @relation(fields: [programId], references: [id])
+  workspace Project  @relation(fields: [workspaceId], references: [id])
+
+  @@index(programId)
+  @@index(workspaceId)
+}
+
+model jackson_index {
+  id       Int    @id @default(autoincrement())
+  key      String @db.VarChar(250)
+  storeKey String @db.VarChar(250)
+
+  @@index([key, storeKey], map: "_jackson_index_key_store")
+}
+
+model jackson_store {
+  key        String    @id @db.VarChar(250)
+  value      String
+  iv         String?   @db.VarChar(64)
+  tag        String?   @db.VarChar(64)
+  namespace  String?   @db.VarChar(64)
+  createdAt  DateTime  @default(now())
+  modifiedAt DateTime?
+
+  @@index([namespace], map: "_jackson_store_namespace")
+}
+
+model jackson_ttl {
+  key       String @id @db.VarChar(250)
+  expiresAt BigInt
+
+  @@index([expiresAt], map: "_jackson_ttl_expires_at")
+}
+
+model Link {
+  id              String    @id @default(cuid())
+  domain          String // domain of the link (e.g. dub.sh) – also stored on Redis
+  key             String // key of the link (e.g. /github) – also stored on Redis
+  url             String // target url (e.g. https://github.com/dubinc/dub) – also stored on Redis
+  shortLink       String    @unique @db.VarChar(400) // new column for the full short link
+  archived        Boolean   @default(false) // whether the link is archived or not
+  expiresAt       DateTime? // when the link expires – stored on Redis via ttl
+  expiredUrl      String? // URL to redirect the user to when the link is expired
+  disabledAt      DateTime? // when the link was disabled
+  password        String? // password to access the link
+  trackConversion Boolean   @default(false) // whether to track conversions or not
+  proxy           Boolean   @default(false) // Proxy to use custom OG tags (stored on redis) – if false, will use OG tags from target url
+  title           String? // OG title for the link (e.g. Dub - open-source link attribution platform)
+  description     String?   @db.VarChar(280) // OG description for the link (e.g. The modern link attribution platform for short links, conversion tracking, and affiliate programs.)
+  image           String? // OG image for the link (e.g. https://d.to/og)
+  video           String? // OG video for the link
+
+  // UTM parameters
+  utm_source   String? // UTM source for the link (e.g. youtube.com)
+  utm_medium   String? // UTM medium for the link (e.g. social)
+  utm_campaign String? // UTM campaign for the link (e.g. summer-sale)
+  utm_term     String? // UTM term for the link (e.g. dub)
+  utm_content  String? // UTM content for the link (e.g. description)
+
+  rewrite Boolean @default(false) // whether to rewrite the link or not
+
+  linkRetentionCleanupDisabledAt DateTime? // When link retention cleanup (see domain.linkRetentionDays) was explicitly disabled
+  doIndex                        Boolean   @default(false) // we don't index short links by default
+
+  // Custom device targeting
+  ios     String? // custom link for iOS devices
+  android String? // custom link for Android devices
+  geo     Json? // custom link for specific countries
+
+  // A/B Testing
+  testVariants    Json?
+  testStartedAt   DateTime? // When tests were started
+  testCompletedAt DateTime? // When tests were or will be completed
+
+  // User who created the link
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  // Project that the link belongs to
+  project   Project? @relation(fields: [projectId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  projectId String?
+
+  folderId String?
+  folder   Folder? @relation(fields: [folderId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+
+  // External & tenant IDs (for API usage + multi-tenancy)
+  externalId String?
+  tenantId   String?
+
+  publicStats Boolean @default(false) // whether to show public stats or not
+  clicks      Int     @default(0) // number of clicks
+  leads       Int     @default(0) // number of leads
+  conversions Int     @default(0) // number of leads that converted to sales
+  sales       Int     @default(0) // number of sales (includes recurring sales)
+  saleAmount  BigInt  @default(0) // total revenue from sales (in cents)
+
+  lastClicked      DateTime? // when the link was last clicked
+  lastLeadAt       DateTime? // when the link last brought in a new lead
+  lastConversionAt DateTime? // when the link last brought in a new conversion
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Link short domain
+  shortDomain Domain @relation(fields: [domain], references: [slug])
+
+  // Link tags
+  tags LinkTag[]
+
+  // Link webhooks
+  webhooks LinkWebhook[]
+
+  // Comments on the particular shortlink
+  comments String?
+
+  dashboard Dashboard?
+
+  programId                 String?
+  program                   Program?                 @relation(fields: [programId], references: [id])
+  partnerId                 String?
+  partner                   Partner?                 @relation(fields: [partnerId], references: [id])
+  programEnrollment         ProgramEnrollment?       @relation(fields: [programId, partnerId], references: [programId, partnerId])
+  partnerGroupDefaultLinkId String?
+  partnerGroupDefaultLink   PartnerGroupDefaultLink? @relation(fields: [partnerGroupDefaultLinkId], references: [id])
+  discountCode              DiscountCode?
+  customers                 Customer[]
+  commissions               Commission[]
+  fraudEvents               FraudEvent[]
+
+  @@unique([domain, key]) // for getting a link by domain and key
+  @@unique([projectId, externalId]) // for getting a link by externalId
+  @@index([projectId, tenantId]) // for filtering by tenantId
+  @@index([projectId, url]) // for upserting a link by URL
+  @@index([projectId, folderId, archived, createdAt(sort: Desc)]) // most getLinksForWorkspace queries
+  @@index([programId, partnerId]) // for getting a referral link (programId + partnerId)
+  @@index(partnerId) // for getting links by partnerId
+  @@index([domain, createdAt]) // for bulk link deletion workflows (by domain) + deleting old short-lived links
+  @@index(folderId) // used in /api/folders
+  @@index(userId) // for relation to User table, used in /api/cron/cleanup/e2e-tests too
+  @@index(partnerGroupDefaultLinkId)
+}
+
+enum MessageType {
+  direct
+  campaign
+}
+
+model Message {
+  id        String @id @default(cuid())
+  programId String
+  partnerId String
+
+  senderUserId    String
+  senderPartnerId String? // Populated only if the sender is a partner
+
+  type    MessageType @default(direct)
+  subject String? // Only for Campaign
+  text    String
+
+  readInApp   DateTime?
+  readInEmail DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  program           Program             @relation(fields: [programId], references: [id], onDelete: Cascade)
+  partner           Partner?            @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  senderUser        User                @relation(fields: [senderUserId], references: [id], onDelete: Cascade)
+  senderPartner     Partner?            @relation("SenderPartner", fields: [senderPartnerId], references: [id], onDelete: Cascade)
+  emails            NotificationEmail[]
+
+  @@index([programId, partnerId])
+  @@index(partnerId)
+  @@index(senderPartnerId)
+  @@index(senderUserId)
+}
+
+model YearInReview {
+  id   String @id @default(cuid())
+  year Int
+
+  totalLinks   Int
+  totalClicks  Int
+  topLinks     Json
+  topCountries Json
+
+  workspaceId String
+  workspace   Project @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+
+  @@index(workspaceId)
+}
+
+model PartnerRewind {
+  id   String @id @default(cuid())
+  year Int
+
+  totalClicks   Int
+  totalLeads    Int
+  totalRevenue  Int
+  totalEarnings Int
+
+  partnerId String
+  partner   Partner @relation(fields: [partnerId], references: [id])
+
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+
+  @@unique([partnerId, year])
+}
+
+enum Category {
+  Artificial_Intelligence
+  Development
+  Design
+  Productivity
+  Finance
+  Marketing
+  Ecommerce
+  Security
+  Education
+  Health
+  Consumer
+  Support
+}
+
+model ProgramCategory {
+  programId String
+  category  Category
+
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@unique([programId, category])
+}
+
+model ProgramSimilarity {
+  id                         String @id @default(cuid())
+  programId                  String
+  similarProgramId           String
+  similarityScore            Float
+  categorySimilarityScore    Float
+  partnerSimilarityScore     Float
+  performanceSimilarityScore Float
+
+  program        Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  similarProgram Program @relation("SimilarProgram", fields: [similarProgramId], references: [id], onDelete: Cascade)
+
+  @@unique([programId, similarProgramId])
+  @@index([programId, similarityScore])
+  @@index(similarProgramId)
+}
+
+model DiscoveredPartner {
+  id        String @id @default(cuid())
+  programId String
+  partnerId String
+
+  starredAt  DateTime?
+  ignoredAt  DateTime?
+  invitedAt  DateTime?
+  messagedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  program           Program            @relation(fields: [programId], references: [id], onDelete: Cascade)
+  partner           Partner            @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  programEnrollment ProgramEnrollment? @relation(fields: [programId, partnerId], references: [programId, partnerId], onDelete: Cascade)
+
+  @@unique([programId, partnerId])
+  @@index(partnerId)
+}
+
+// TODO: remove after we refactor all partner.industryInterests to use programCategory instead
+enum IndustryInterest {
+  SaaS
+  DevTool
+  AI
+  Creative_And_Design
+  Productivity_Software
+  Marketing
+  Gaming
+  Finance
+  Sales
+  Ecommerce
+  Customer_Service_And_Support
+  Content_Management
+  Human_Resources
+  Security
+  Analytics_And_Data
+  Social_Media
+  Consumer_Tech
+  Education_And_Learning
+  Health_And_Fitness
+  Food_And_Beverage
+  Travel_And_Lifestyle
+  Entertainment_And_Media
+  Sports
+  Science_And_Engineering
+}
+
+enum NotificationEmailType {
+  Message
+  Bounty
+  Campaign
+}
+
+model NotificationEmail {
+  id              String                @id @default(cuid())
+  emailId         String                @unique // Resend email id
+  type            NotificationEmailType
+  messageId       String?
+  bountyId        String?
+  campaignId      String?
+  programId       String?
+  partnerId       String?
+  recipientUserId String?
+  deliveredAt     DateTime?
+  openedAt        DateTime?
+  bouncedAt       DateTime?
+  createdAt       DateTime              @default(now())
+
+  message  Message?  @relation(fields: [messageId], references: [id])
+  bounty   Bounty?   @relation(fields: [bountyId], references: [id])
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  partner  Partner?  @relation(fields: [partnerId], references: [id])
+
+  @@index(type)
+  @@index(messageId)
+  @@index(bountyId)
+  @@index(campaignId)
+  @@index(partnerId)
+}
+
+model UserNotificationPreferences {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  dubLinks       Boolean @default(true)
+  dubPartners    Boolean @default(true)
+  partnerAccount Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// TODO: update this to WorkspaceNotificationPreferences
+model NotificationPreference {
+  id                         String  @id @default(cuid())
+  projectUserId              String  @unique
+  linkUsageSummary           Boolean @default(true)
+  domainConfigurationUpdates Boolean @default(true)
+  newPartnerSale             Boolean @default(true)
+  newPartnerApplication      Boolean @default(false)
+  pendingApplicationsSummary Boolean @default(true)
+  newBountySubmitted         Boolean @default(true)
+  newMessageFromPartner      Boolean @default(true)
+  fraudEventsSummary         Boolean @default(true)
+
+  projectUser ProjectUsers @relation(fields: [projectUserId], references: [id], onDelete: Cascade)
+}
+
+model PartnerNotificationPreferences {
+  id            String @id @default(cuid())
+  partnerUserId String @unique
+
+  commissionCreated     Boolean @default(true)
+  applicationApproved   Boolean @default(true)
+  newMessageFromProgram Boolean @default(true)
+  marketingCampaign     Boolean @default(true)
+  connectPayoutReminder Boolean @default(true)
+  monthlyProgramSummary Boolean @default(true)
+
+  partnerUser PartnerUser @relation(fields: [partnerUserId], references: [id], onDelete: Cascade)
+}
+
+model OAuthApp {
+  id                  String  @id @default(cuid())
+  integrationId       String  @unique
+  clientId            String  @unique
+  hashedClientSecret  String
+  partialClientSecret String
+  redirectUris        Json
+  pkce                Boolean @default(false)
+
+  oAuthCodes  OAuthCode[]
+  integration Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+}
+
+model OAuthCode {
+  id                  String   @id @default(cuid())
+  clientId            String
+  userId              String // User who granted access
+  projectId           String // Workspace that user granted access to
+  code                String   @unique
+  scopes              String?
+  redirectUri         String
+  codeChallenge       String?
+  codeChallengeMethod String?
+  expiresAt           DateTime
+  createdAt           DateTime @default(now())
+
+  oAuthApp OAuthApp @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([userId])
+  @@index([projectId])
+}
+
+model OAuthRefreshToken {
+  id                 String   @id @default(cuid())
+  installationId     String
+  accessTokenId      String
+  hashedRefreshToken String   @unique
+  expiresAt          DateTime
+  createdAt          DateTime @default(now())
+
+  accessToken          RestrictedToken      @relation(fields: [accessTokenId], references: [id], onDelete: Cascade)
+  installedIntegration InstalledIntegration @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@index([installationId])
+  @@index([accessTokenId])
+}
+
+enum PartnerRole {
+  owner
+  member
+}
+
+enum PartnerProfileType {
+  individual
+  company
+}
+
+enum PartnerNetworkStatus {
+  draft
+  submitted
+  approved
+  rejected
+  trusted
+}
+
+enum MonthlyTraffic {
+  ZeroToOneThousand
+  OneThousandToTenThousand
+  TenThousandToFiftyThousand
+  FiftyThousandToOneHundredThousand
+  OneHundredThousandPlus
+}
+
+enum PartnerPayoutMethod {
+  connect
+  stablecoin
+  paypal
+}
+
+// https://devdocs.veriff.com/v1/docs/how-to-generate-sessions-manually#verification-session-statuses
+enum IdentityVerificationStatus {
+  started
+  submitted
+  approved
+  declined
+  resubmissionRequested
+  expired
+  abandoned
+  review
+}
+
+model Partner {
+  id            String               @id @default(cuid())
+  name          String
+  username      String?              @unique
+  email         String?              @unique
+  image         String?
+  description   String?
+  country       String?
+  companyName   String?
+  profileType   PartnerProfileType   @default(individual)
+  networkStatus PartnerNetworkStatus @default(draft)
+
+  // identity verification fields
+  identityVerificationStatus IdentityVerificationStatus?
+  identityVerifiedAt         DateTime?
+  veriffSessionId            String?                     @unique
+  veriffMetadata             Json? // see veriffMetadataSchema
+
+  // payout fields
+  defaultPayoutMethod          PartnerPayoutMethod?
+  payoutsEnabledAt             DateTime?
+  connectPayoutsLastRemindedAt DateTime?
+  paypalEmail                  String?              @unique
+  stripeConnectId              String?              @unique
+  stripeRecipientId            String?              @unique
+  payoutMethodHash             String?
+  cryptoWalletAddress          String?
+
+  // timestamp fields
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  submittedAt      DateTime?
+  reviewedAt       DateTime?
+  trustedAt        DateTime?
+
+  // miscellaneous fields
+  invoiceSettings     Json?
+  changeHistoryLog    Json?
+  referredByPartnerId String?
+
+  programs                   ProgramEnrollment[]
+  users                      PartnerUser[]
+  invites                    PartnerInvite[]
+  links                      Link[]
+  customers                  Customer[]
+  payouts                    Payout[]
+  commissions                Commission[]
+  bountySubmissions          BountySubmission[]
+  postbacks                  Postback[]
+  messages                   Message[]
+  sentMessages               Message[]                          @relation("SenderPartner")
+  comments                   PartnerComment[]
+  discountCodes              DiscountCode[]
+  notificationEmails         NotificationEmail[]
+  monthlyTraffic             MonthlyTraffic?
+  industryInterests          PartnerIndustryInterest[]
+  preferredEarningStructures PartnerPreferredEarningStructure[]
+  salesChannels              PartnerSalesChannel[]
+  discoveredByPrograms       DiscoveredPartner[]
+  programPartnerTags         ProgramPartnerTag[]
+  fraudEventGroups           FraudEventGroup[]
+  fraudEvents                FraudEvent[]
+  fraudAlerts                FraudAlert[]
+  partnerRewinds             PartnerRewind[]
+  platforms                  PartnerPlatform[]
+  referrals                  PartnerReferral[]
+  referredApplications       ProgramApplicationEvent[]
+
+  @@index(country)
+  @@index(networkStatus)
+  @@index(createdAt)
+  @@index(payoutMethodHash)
+  @@index(cryptoWalletAddress)
+  @@index(identityVerifiedAt)
+}
+
+model PartnerInvite {
+  email     String
+  expires   DateTime
+  partnerId String
+  role      PartnerRole @default(member)
+  createdAt DateTime    @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([email, partnerId])
+  @@index(partnerId)
+}
+
+model PartnerUser {
+  id        String      @id @default(cuid())
+  role      PartnerRole @default(member)
+  userId    String
+  partnerId String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  notificationPreferences PartnerNotificationPreferences?
+
+  @@unique([userId, partnerId])
+  @@index(partnerId)
+}
+
+model PartnerIndustryInterest {
+  partnerId        String
+  industryInterest IndustryInterest
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, industryInterest])
+}
+
+enum PreferredEarningStructure {
+  Revenue_Share
+  Per_Lead
+  Per_Sale
+  Per_Click
+  One_Time_Payment
+}
+
+model PartnerPreferredEarningStructure {
+  partnerId                 String
+  preferredEarningStructure PreferredEarningStructure
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, preferredEarningStructure])
+}
+
+enum SalesChannel {
+  Blogs
+  Coupons
+  Direct_Reselling
+  Newsletters
+  Social_Media
+  Events
+  Company_Referrals
+}
+
+model PartnerSalesChannel {
+  partnerId    String
+  salesChannel SalesChannel
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, salesChannel])
+}
+
+enum PayoutStatus {
+  pending
+  processing
+  processed
+  sent
+  completed
+  failed
+  canceled
+}
+
+enum PayoutMode {
+  internal
+  external
+}
+
+model Payout {
+  id                  String               @id @default(cuid())
+  programId           String
+  partnerId           String
+  invoiceId           String?
+  amount              Int                  @default(0)
+  currency            String               @default("USD")
+  status              PayoutStatus         @default(pending)
+  mode                PayoutMode?
+  method              PartnerPayoutMethod?
+  description         String?
+  periodStart         DateTime?
+  periodEnd           DateTime?
+  paypalTransferId    String?              @unique
+  stripeTransferId    String?
+  stripePayoutId      String?
+  stripePayoutTraceId String?
+  failureReason       String?
+  webhookEventId      String?              @unique // only for external payouts
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  userId      String? // user who made the payout
+  initiatedAt DateTime?
+  paidAt      DateTime?
+
+  program           Program           @relation(fields: [programId], references: [id])
+  partner           Partner           @relation(fields: [partnerId], references: [id])
+  programEnrollment ProgramEnrollment @relation(fields: [programId, partnerId], references: [programId, partnerId])
+  invoice           Invoice?          @relation(fields: [invoiceId], references: [id])
+  user              User?             @relation(fields: [userId], references: [id])
+  commissions       Commission[]
+
+  @@index([programId, status])
+  @@index([programId, partnerId]) // for programEnrollment relation
+  @@index(partnerId)
+  @@index(invoiceId)
+  @@index(status)
+  @@index(method)
+  @@index(userId)
+  @@index(stripePayoutId)
+  @@index(stripeTransferId)
+}
+
+enum PlatformType {
+  website
+  youtube
+  twitter
+  linkedin
+  instagram
+  tiktok
+}
+
+model PartnerPlatform {
+  id            String       @id @default(cuid())
+  partnerId     String
+  type          PlatformType
+  identifier    String // The unique identifier for the platform (e.g., username for social platforms, domain for websites)
+  platformId    String? // Platform-specific immutable ID (e.g., YouTube channel ID)
+  avatarUrl     String?
+  subscribers   BigInt       @default(0) // Subscribers/followers for social platforms, also for newsletter subscribers
+  posts         BigInt       @default(0)
+  views         BigInt       @default(0) // Video views for YouTube, impressions for social platforms, pageviews for websites
+  metadata      Json?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  verifiedAt    DateTime?
+  lastCheckedAt DateTime?
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, type])
+  @@index(type)
+}
+
+enum PostbackReceiver {
+  custom
+  slack
+}
+
+model Postback {
+  id         String           @id @default(cuid())
+  partnerId  String
+  name       String
+  url        String
+  secret     String
+  triggers   Json
+  receiver   PostbackReceiver
+  disabledAt DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index(partnerId)
+}
+
+enum ProgramEnrollmentStatus {
+  pending // pending applications that need approval
+  approved // partner who has been approved/actively enrolled
+  rejected // program rejected the partner
+  invited // partner who has been invited
+  declined // partner declined the invite
+  deactivated // partner is deactivated by the program
+  banned // partner is banned from the program
+  archived // partner is archived by the program
+}
+
+enum PartnerBannedReason {
+  tos_violation
+  inappropriate_content
+  fake_traffic
+  fraud
+  spam
+  brand_abuse
+}
+
+enum ProgramPayoutMode {
+  internal // All payouts are handled by Dub
+  hybrid // Partners with payouts enabled are paid by Dub, others via external
+  external // All payouts are processed through external
+}
+
+model Program {
+  id                 String            @id @default(cuid())
+  workspaceId        String
+  defaultFolderId    String
+  defaultGroupId     String
+  name               String
+  slug               String            @unique
+  domain             String?           @unique
+  url                String?
+  logo               String?
+  description        String?
+  primaryRewardEvent EventType         @default(sale)
+  minPayoutAmount    Int               @default(0) // Default minimum payout amount of $0
+  payoutMode         ProgramPayoutMode @default(internal)
+
+  inviteEmailData         Json?
+  embedData               Json?
+  resources               Json?
+  referralFormData        Json?
+  applicationRequirements Json?
+  termsUrl                String?
+  helpUrl                 String?
+  supportEmail            String?
+
+  messagingEnabledAt      DateTime?
+  partnerNetworkEnabledAt DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  startedAt               DateTime?
+  deactivatedAt           DateTime?
+
+  addedToMarketplaceAt    DateTime?
+  featuredOnMarketplaceAt DateTime?
+  marketplaceHeaderImage  String?
+  marketplaceRanking      Int       @default(2147483647)
+
+  workspace                Project                   @relation(fields: [workspaceId], references: [id])
+  customDomain             Domain?                   @relation(fields: [domain], references: [slug])
+  partners                 ProgramEnrollment[]
+  payouts                  Payout[]
+  invoices                 Invoice[]
+  applications             ProgramApplication[]
+  links                    Link[]
+  customers                Customer[]
+  commissions              Commission[]
+  rewards                  Reward[]
+  discounts                Discount[]                @relation("ProgramDiscounts")
+  discountCodes            DiscountCode[]
+  groups                   PartnerGroup[]
+  partnerGroupDefaultLinks PartnerGroupDefaultLink[]
+  bounties                 Bounty[]
+  bountySubmissions        BountySubmission[]
+  workflows                Workflow[]
+  messages                 Message[]
+  comments                 PartnerComment[]
+  campaigns                Campaign[]
+  emailDomains             EmailDomain[]
+  discoveredPartners       DiscoveredPartner[]
+  similarPrograms          ProgramSimilarity[]
+  similarToPrograms        ProgramSimilarity[]       @relation("SimilarProgram")
+  categories               ProgramCategory[]
+  fraudRules               FraudRule[]
+  fraudEventGroups         FraudEventGroup[]
+  sourceFraudEvents        FraudEvent[]              @relation("SourceFraudEvents")
+  fraudAlerts              FraudAlert[]
+  referrals                PartnerReferral[]
+  partnerTags              PartnerTag[]
+  programPartnerTags       ProgramPartnerTag[]
+
+  @@index(workspaceId)
+  @@index(addedToMarketplaceAt)
+}
+
+model ProgramEnrollment {
+  id            String                  @id @default(cuid())
+  partnerId     String
+  programId     String
+  tenantId      String?
+  groupId       String?
+  applicationId String?                 @unique
+  clickRewardId String?
+  leadRewardId  String?
+  saleRewardId  String?
+  discountId    String?
+  status        ProgramEnrollmentStatus @default(pending)
+
+  // partner stats
+  totalClicks      Int    @default(0) // total clicks
+  totalLeads       Int    @default(0) // total leads
+  totalConversions Int    @default(0) // total conversions
+  totalSales       Int    @default(0) // total sales
+  totalSaleAmount  BigInt @default(0) // total sale amount (in cents)
+  totalCommissions BigInt @default(0) // total commissions earned by the partner (in cents)
+
+  // calculated stats
+  netRevenue              BigInt    @default(0) // totalSaleAmount - totalCommissions
+  earningsPerClick        Float     @default(0) // totalSaleAmount / totalClicks
+  averageLifetimeValue    Float? // totalSaleAmount / totalConversions (in cents)
+  clickToLeadRate         Float? // totalLeads / totalClicks
+  clickToConversionRate   Float? // totalConversions / totalClicks
+  leadToConversionRate    Float? // totalConversions / totalLeads
+  returnOnAdSpend         Float? // totalSaleAmount / totalCommissions
+  lastConversionAt        DateTime? // latest conversion from partner's links
+  daysSinceLastConversion Int? // days since lastConversionAt
+  consistencyScore        Int? // based on daysSinceLastConversion
+
+  createdAt                    DateTime             @default(now())
+  updatedAt                    DateTime             @updatedAt
+  customerDataSharingEnabledAt DateTime?
+  groupMoveDisabledAt          DateTime?
+  bannedAt                     DateTime?
+  bannedReason                 PartnerBannedReason?
+
+  partner            Partner             @relation(fields: [partnerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  program            Program             @relation(fields: [programId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  links              Link[]
+  customers          Customer[]
+  partnerGroup       PartnerGroup?       @relation(fields: [groupId], references: [id])
+  application        ProgramApplication? @relation(fields: [applicationId], references: [id])
+  clickReward        Reward?             @relation("ClickRewardEnrollments", fields: [clickRewardId], references: [id])
+  leadReward         Reward?             @relation("LeadRewardEnrollments", fields: [leadRewardId], references: [id])
+  saleReward         Reward?             @relation("SaleRewardEnrollments", fields: [saleRewardId], references: [id])
+  discount           Discount?           @relation(fields: [discountId], references: [id])
+  bountySubmissions  BountySubmission[]
+  discountCodes      DiscountCode[]
+  commissions        Commission[]
+  payouts            Payout[]
+  fraudEventGroups   FraudEventGroup[]
+  referrals          PartnerReferral[]
+  fraudAlerts        FraudAlert[]
+  discoveredPartner  DiscoveredPartner?
+  programPartnerTags ProgramPartnerTag[]
+
+  // unique constraints
+  @@unique([partnerId, programId])
+  @@unique([tenantId, programId])
+  // indexes for sorting partners
+  @@index([programId, status, totalClicks])
+  @@index([programId, status, totalLeads])
+  @@index([programId, status, totalConversions])
+  @@index([programId, status, totalSaleAmount])
+  @@index([programId, status, totalCommissions])
+  @@index([programId, status, netRevenue])
+  @@index([programId, status, earningsPerClick])
+  @@index([programId, status, averageLifetimeValue])
+  @@index([programId, status, clickToLeadRate])
+  @@index([programId, status, clickToConversionRate])
+  @@index([programId, status, leadToConversionRate])
+  @@index([programId, status, returnOnAdSpend])
+  // other indexes
+  @@index([programId, groupId])
+  @@index([groupId, status])
+  @@index(clickRewardId)
+  @@index(leadRewardId)
+  @@index(saleRewardId)
+  @@index(discountId)
+}
+
+enum ReferralStatus {
+  pending
+  qualified
+  meeting
+  negotiation
+  unqualified
+  closedWon
+  closedLost
+}
+
+model PartnerReferral {
+  id         String         @id @default(cuid())
+  programId  String
+  partnerId  String
+  customerId String?
+  name       String
+  email      String
+  company    String
+  formData   Json?
+  status     ReferralStatus @default(pending)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  program           Program           @relation(fields: [programId], references: [id])
+  partner           Partner           @relation(fields: [partnerId], references: [id])
+  programEnrollment ProgramEnrollment @relation(fields: [programId, partnerId], references: [programId, partnerId])
+  customer          Customer?         @relation(fields: [customerId], references: [id])
+
+  @@index([programId, partnerId])
+  @@index(partnerId)
+  @@index(customerId)
+}
+
+enum EventType {
+  click
+  lead
+  sale
+}
+
+enum RewardStructure {
+  percentage
+  flat
+}
+
+model Reward {
+  id                 String          @id @default(cuid())
+  programId          String
+  description        String?
+  tooltipDescription String?
+  event              EventType
+  type               RewardStructure @default(percentage)
+  amountInCents      Int?
+  amountInPercentage Decimal?
+  maxDuration        Int? // in months (0 -> not recurring, null -> infinite)
+  modifiers          Json?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  program           Program             @relation(fields: [programId], references: [id])
+  clickEnrollments  ProgramEnrollment[] @relation("ClickRewardEnrollments")
+  leadEnrollments   ProgramEnrollment[] @relation("LeadRewardEnrollments")
+  saleEnrollments   ProgramEnrollment[] @relation("SaleRewardEnrollments")
+  clickPartnerGroup PartnerGroup?       @relation("ClickReward")
+  leadPartnerGroup  PartnerGroup?       @relation("LeadReward")
+  salePartnerGroup  PartnerGroup?       @relation("SaleReward")
+  commissions       Commission[]
+
+  @@index([programId, event])
+  @@index(event) // used in aggregate-clicks cron job
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String
+  color     String    @default("blue")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  project   Project?  @relation(fields: [projectId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  projectId String?
+  links     LinkTag[]
+
+  @@unique([name, projectId])
+  @@index(projectId)
+}
+
+model LinkTag {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  link      Link     @relation(fields: [linkId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  linkId    String
+  tag       Tag      @relation(fields: [tagId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  tagId     String
+
+  @@unique([linkId, tagId])
+  @@index(tagId)
+}
+
+model PartnerTag {
+  id        String   @id @default(cuid())
+  programId String?
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  program            Program?            @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programPartnerTags ProgramPartnerTag[]
+
+  @@unique([programId, name])
+  @@index(programId)
+}
+
+model ProgramPartnerTag {
+  id           String @id @default(cuid())
+  programId    String
+  partnerId    String
+  partnerTagId String
+
+  program           Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programEnrollment ProgramEnrollment @relation(fields: [programId, partnerId], references: [programId, partnerId], onDelete: Cascade, onUpdate: Cascade)
+  partnerTag        PartnerTag        @relation(fields: [partnerTagId], references: [id], onDelete: Cascade)
+  partner           Partner           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerTagId, partnerId])
+  @@index(partnerId)
+  @@index([programId, partnerId])
+  @@index([partnerTagId, programId])
+}
+
+model Token {
+  id         String    @id @default(cuid())
+  name       String
+  hashedKey  String    @unique
+  partialKey String
+  expires    DateTime?
+  lastUsed   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+
+  @@index([userId])
+}
+
+model RestrictedToken {
+  id             String    @id @default(cuid())
+  name           String
+  hashedKey      String    @unique
+  partialKey     String
+  scopes         String? // space separated (Eg: "links.write domains.read")
+  expires        DateTime?
+  lastUsed       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  userId         String
+  projectId      String
+  installationId String? // if the token is generated by an OAuth client
+
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project              Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  refreshTokens        OAuthRefreshToken[]
+  installedIntegration InstalledIntegration? @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([installationId])
+}
+
+// Login tokens
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Email verification OTPs
+model EmailVerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Password reset tokens
+model PasswordResetToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model UtmTemplate {
+  id   String @id @default(cuid())
+  name String
+
+  // Parameters
+  utm_source   String?
+  utm_medium   String?
+  utm_campaign String?
+  utm_term     String?
+  utm_content  String?
+  ref          String?
+
+  // User who created the template
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  // Project that the template belongs to
+  project   Project? @relation(fields: [projectId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  projectId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  partnerGroup PartnerGroup?
+
+  @@unique([projectId, name])
+  @@index(userId)
+}
+
+enum WebhookReceiver {
+  user
+  zapier
+  make
+  slack
+  segment
+}
+
+model Webhook {
+  id                  String          @id @default(cuid())
+  projectId           String
+  installationId      String? // indicates which integration installation added the webhook
+  receiver            WebhookReceiver @default(user)
+  name                String
+  url                 String
+  secret              String
+  triggers            Json
+  consecutiveFailures Int             @default(0)
+  lastFailedAt        DateTime?
+  disabledAt          DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  project              Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  installedIntegration InstalledIntegration? @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  links                LinkWebhook[]
+
+  @@index(projectId)
+  @@index(installationId)
+}
+
+model LinkWebhook {
+  id        String @id @default(cuid())
+  linkId    String
+  webhookId String
+
+  link    Link    @relation(fields: [linkId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  webhook Webhook @relation(fields: [webhookId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([linkId, webhookId])
+  @@index(webhookId)
+}
+
+enum WorkflowTrigger {
+  partnerEnrolled // scheduled
+  partnerMetricsUpdated
+
+  // TODO: Remove this after migrations
+  clickRecorded
+  commissionEarned
+  leadRecorded
+  saleRecorded
+}
+
+model Workflow {
+  id                String          @id @default(cuid())
+  programId         String
+  name              String?
+  trigger           WorkflowTrigger
+  triggerConditions Json
+  actions           Json
+  disabledAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  program      Program       @relation(fields: [programId], references: [id], onDelete: Cascade)
+  bounty       Bounty?
+  campaign     Campaign?
+  partnerGroup PartnerGroup?
+
+  @@index([programId, trigger])
+}
+
+enum PlanPeriod {
+  monthly
+  yearly
+  quarterly
+  biweekly
+}
+
+model Project {
+  id               String  @id @default(cuid())
+  name             String
+  slug             String  @unique
+  logo             String?
+  inviteCode       String? @unique
+  defaultProgramId String? @unique // default affiliate program ID for the workspace
+
+  plan                   String      @default("free")
+  planTier               Int         @default(1)
+  planPeriod             PlanPeriod? // monthly, yearly, etc. from Stripe price.recurring.interval
+  stripeId               String?     @unique // Stripe subscription ID
+  billingCycleStart      Int // day of the month when the billing cycle starts
+  billingCycleEndsAt     DateTime? // derived from Stripe current_period_end
+  trialEndsAt            DateTime? // when set and in the future, the workspace is on a Stripe subscription free trial
+  subscriptionCanceledAt DateTime? // when the workspace's subscription was canceled (or set to cancel)
+  paymentFailedAt        DateTime?
+  invoicePrefix          String?     @unique // prefix used to generate unique invoice numbers (for Dub Payouts)
+
+  stripeConnectId String? @unique // for Stripe Integration
+  shopifyStoreId  String? @unique // for Shopify Integration
+
+  totalLinks  Int @default(0) // Total number of links in the workspace
+  totalClicks Int @default(0) // Total number of clicks in the workspace
+
+  usage                Int   @default(0)
+  usageLimit           Int   @default(1000)
+  linksUsage           Int   @default(0)
+  linksLimit           Int   @default(25)
+  payoutsUsage         Int   @default(0)
+  payoutsLimit         Int   @default(0)
+  payoutFee            Float @default(0.05) // processing fee (in decimals) for partner payouts
+  payoutFeeWaiverLimit Int   @default(0) // amount in cents for which the payout fee will be waived
+  payoutFeeWaiverUsage Int   @default(0) // how much of payoutFeeWaiverLimit has been used
+
+  domainsLimit        Int @default(3)
+  tagsLimit           Int @default(5)
+  partnerTagsLimit    Int @default(0)
+  foldersUsage        Int @default(0)
+  foldersLimit        Int @default(0)
+  partnersUsage       Int @default(0)
+  partnersLimit       Int @default(0)
+  groupsLimit         Int @default(0)
+  usersLimit          Int @default(1)
+  aiUsage             Int @default(0)
+  aiLimit             Int @default(10)
+  networkInvitesLimit Int @default(0)
+
+  referralLinkId  String? @unique
+  referredSignups Int     @default(0)
+
+  store                     Json? // General key-value store for things like persisting toggles, dismissing popups, etc.
+  siteVisitTrackingSettings Json? // Site visit tracking: sitemaps, short-link domain, Site Links folder id
+  allowedHostnames          Json?
+  publishableKey            String? @unique // for the client-side publishable key
+
+  conversionEnabled      Boolean @default(false) // Whether to enable conversion tracking for links by default
+  webhookEnabled         Boolean @default(false)
+  dotLinkClaimed         Boolean @default(false)
+  fastDirectDebitPayouts Boolean @default(false)
+
+  ssoEmailDomain   String?   @unique
+  ssoEnforcedAt    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  usageLastChecked DateTime  @default(now())
+
+  users                 ProjectUsers[]
+  invites               ProjectInvite[]
+  sentEmails            SentEmail[]
+  links                 Link[]
+  domains               Domain[]
+  tags                  Tag[]
+  programs              Program[]
+  invoices              Invoice[]
+  customers             Customer[]
+  defaultDomains        DefaultDomains[]
+  restrictedTokens      RestrictedToken[]
+  oAuthCodes            OAuthCode[]
+  integrations          Integration[] // Integrations workspace published
+  installedIntegrations InstalledIntegration[] // Integrations workspace installed
+  webhooks              Webhook[]
+  folders               Folder[]
+  registeredDomains     RegisteredDomain[]
+  dashboards            Dashboard[]
+  utmTemplates          UtmTemplate[]
+  yearInReviews         YearInReview[]
+
+  @@index(usageLastChecked(sort: Asc))
+  @@index(trialEndsAt)
+}
+
+enum WorkspaceRole {
+  owner
+  member
+  viewer
+  billing
+}
+
+model ProjectInvite {
+  email     String
+  expires   DateTime
+  project   Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  role      WorkspaceRole @default(member)
+  createdAt DateTime      @default(now())
+
+  @@unique([email, projectId])
+  @@index([projectId])
+}
+
+model ProjectUsers {
+  id                     String                  @id @default(cuid())
+  role                   WorkspaceRole           @default(member)
+  userId                 String
+  projectId              String
+  notificationPreference NotificationPreference?
+  workspacePreferences   Json?
+  defaultFolderId        String?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index(projectId)
+}
+
+// TODO: could potentially combine this with NotificationEmail in the future?
+model SentEmail {
+  id        String   @id @default(cuid())
+  type      String
+  createdAt DateTime @default(now())
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String?
+
+  @@index(projectId)
+}
+
+
