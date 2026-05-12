@@ -1,7 +1,6 @@
-const { PrismaPlugin } = require("@prisma/nextjs-monorepo-workaround-plugin");
-const { withPlausibleProxy } = require("next-plausible");
+import { PrismaPlugin } from "@prisma/nextjs-monorepo-workaround-plugin";
+import { withPlausibleProxy } from "next-plausible";
 
-// Suppress specific external package warnings
 const originalConsoleWarn = console.warn;
 console.warn = (...args) => {
   const message = args.join(" ");
@@ -13,17 +12,19 @@ console.warn = (...args) => {
     message.includes("matches serverExternalPackages") ||
     message.includes("Try to install it into the project directory")
   ) {
-    return; // Suppress these warnings
+    return;
   }
   originalConsoleWarn.apply(console, args);
 };
 
-/** @type {import('next').NextConfig} */
-module.exports = withPlausibleProxy({
+const withPlausible = withPlausibleProxy({
   src: "https://plausible.io/js/pa-T9BPIqC3D0XQFZnP1vHfN.js",
   scriptPath: "/_proxy/plausible/script.js",
   apiPath: "/_proxy/plausible/event",
-})({
+});
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: false,
   transpilePackages: [
     "prettier",
@@ -44,8 +45,6 @@ module.exports = withPlausibleProxy({
     optimizePackageImports: [
       "@dub/email",
       "@dub/ui",
-      // Disabled: causes "Module not found: chunk-WKSJXYEU.mjs" on Vercel due to tsup's chunked output
-      // "@dub/utils",
       "@team-plain/typescript-sdk",
     ],
     serverActions: {
@@ -55,7 +54,6 @@ module.exports = withPlausibleProxy({
   webpack: (config, { webpack, isServer }) => {
     if (isServer) {
       config.plugins.push(
-        // mute errors for unused typeorm deps
         new webpack.IgnorePlugin({
           resourceRegExp:
             /(^@google-cloud\/spanner|^@mongodb-js\/zstd|^aws-crt|^aws4$|^pg-native$|^mongodb-client-encryption$|^@sap\/hana-client$|^@sap\/hana-client\/extension\/Stream$|^snappy$|^react-native-sqlite-storage$|^bson-ext$|^cardinal$|^kerberos$|^hdb-pool$|^sql.js$|^sqlite3$|^better-sqlite3$|^ioredis$|^typeorm-aurora-data-api-driver$|^pg-query-stream$|^oracledb$|^mysql$|^snappy\/package\.json$|^cloudflare:sockets$)/,
@@ -74,39 +72,17 @@ module.exports = withPlausibleProxy({
   },
   images: {
     remotePatterns: [
-      {
-        hostname: "assets.dub.co", // for Dub's static assets
-      },
-      {
-        hostname: "dubassets.com", // for Dub's user generated images
-      },
-      {
-        hostname: "dev.dubassets.com", // dev bucket
-      },
-      {
-        hostname: "www.google.com",
-      },
-      {
-        hostname: "avatar.vercel.sh",
-      },
-      {
-        hostname: "faisalman.github.io",
-      },
-      {
-        hostname: "api.dicebear.com",
-      },
-      {
-        hostname: "pbs.twimg.com",
-      },
-      {
-        hostname: "lh3.googleusercontent.com",
-      },
-      {
-        hostname: "avatars.githubusercontent.com",
-      },
-      {
-        hostname: "media.cleanshot.cloud", // only for staging purposes
-      },
+      { hostname: "assets.dub.co" },
+      { hostname: "dubassets.com" },
+      { hostname: "dev.dubassets.com" },
+      { hostname: "www.google.com" },
+      { hostname: "avatar.vercel.sh" },
+      { hostname: "faisalman.github.io" },
+      { hostname: "api.dicebear.com" },
+      { hostname: "pbs.twimg.com" },
+      { hostname: "lh3.googleusercontent.com" },
+      { hostname: "avatars.githubusercontent.com" },
+      { hostname: "media.cleanshot.cloud" },
     ],
   },
   async headers() {
@@ -114,27 +90,15 @@ module.exports = withPlausibleProxy({
       {
         source: "/:path*",
         headers: [
-          {
-            key: "Referrer-Policy",
-            value: "no-referrer-when-downgrade",
-          },
-          {
-            key: "X-DNS-Prefetch-Control",
-            value: "on",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
+          { key: "Referrer-Policy", value: "no-referrer-when-downgrade" },
+          { key: "X-DNS-Prefetch-Control", value: "on" },
+          { key: "X-Frame-Options", value: "DENY" },
         ],
       },
       {
         source: "/embed/:path*",
         headers: [
-          {
-            key: "Content-Security-Policy",
-            value: "frame-ancestors *",
-          },
+          { key: "Content-Security-Policy", value: "frame-ancestors *" },
         ],
       },
     ];
@@ -143,60 +107,35 @@ module.exports = withPlausibleProxy({
     return [
       {
         source: "/",
-        has: [
-          {
-            type: "host",
-            value: "app.dub.sh",
-          },
-        ],
+        has: [{ type: "host", value: "app.dub.sh" }],
         destination: "https://app.vtrack.io",
         permanent: true,
         statusCode: 301,
       },
       {
         source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "app.dub.sh",
-          },
-        ],
+        has: [{ type: "host", value: "app.dub.sh" }],
         destination: "https://app.vtrack.io/:path*",
         permanent: true,
         statusCode: 301,
       },
       {
         source: "/",
-        has: [
-          {
-            type: "host",
-            value: "staging.dub.sh",
-          },
-        ],
+        has: [{ type: "host", value: "staging.dub.sh" }],
         destination: "https://vtrack.io",
         permanent: true,
         statusCode: 301,
       },
       {
         source: "/",
-        has: [
-          {
-            type: "host",
-            value: "preview.dub.sh",
-          },
-        ],
+        has: [{ type: "host", value: "preview.dub.sh" }],
         destination: "https://preview.dub.co",
         permanent: true,
         statusCode: 301,
       },
       {
         source: "/",
-        has: [
-          {
-            type: "host",
-            value: "admin.dub.sh",
-          },
-        ],
+        has: [{ type: "host", value: "admin.dub.sh" }],
         destination: "https://admin.dub.co",
         permanent: true,
         statusCode: 301,
@@ -205,7 +144,6 @@ module.exports = withPlausibleProxy({
   },
   async rewrites() {
     return [
-      // for dub proxy
       {
         source: "/_proxy/dub/script.js",
         destination: "https://www.dubcdn.com/analytics/script.js",
@@ -216,4 +154,6 @@ module.exports = withPlausibleProxy({
       },
     ];
   },
-});
+};
+
+export default withPlausible(nextConfig);
