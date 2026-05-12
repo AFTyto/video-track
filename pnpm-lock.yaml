@@ -104,6 +104,9 @@ importers:
       '@prisma/adapter-neon':
         specifier: 6.19.1
         version: 6.19.1
+      '@prisma/client':
+        specifier: 6.19.1
+        version: 6.19.1(prisma@6.19.1(typescript@5.4.4))(typescript@5.4.4)
       '@prisma/nextjs-monorepo-workaround-plugin':
         specifier: ^6.19.1
         version: 6.19.1
