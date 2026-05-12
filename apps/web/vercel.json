@@ -1,4 +1,8 @@
 {
+  "rootDirectory": "apps/web",
+  "outputDirectory": ".next",
+  "buildCommand": "pnpm prisma:generate && next build",
+  "installCommand": "pnpm install --filter=web",
   "crons": [
     {
       "path": "/api/cron/domains/verify",
