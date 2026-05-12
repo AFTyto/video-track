@@ -10,13 +10,40 @@
   --accent-muted: rgba(0, 255, 153, 0.1);
   --accent-border: rgba(0, 255, 153, 0.15);
   --accent-hover: rgba(0, 255, 153, 0.18);
-  --bg-canvas: #000000;
+  --bg-canvas: #0a0a0a;
   --bg-surface: rgba(255, 255, 255, 0.03);
   --bg-surface-hover: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.06);
   --border-subtle: rgba(255, 255, 255, 0.04);
   --border-strong: rgba(255, 255, 255, 0.1);
   --border-focus: rgba(0, 255, 153, 0.5);
+}
+
+/* Global dark theme overrides */
+body {
+  background-color: #0a0a0a !important;
+}
+
+/* Override Tailwind neutral grays to dark theme */
+.bg-neutral-50, .bg-neutral-100 { background-color: #111111 !important; }
+.bg-neutral-200 { background-color: #1a1a1a !important; }
+.bg-neutral-300 { background-color: #252525 !important; }
+.bg-white { background-color: #111111 !important; }
+
+.text-neutral-900, .text-neutral-950 { color: rgba(255,255,255,0.9) !important; }
+.text-neutral-700, .text-neutral-800 { color: rgba(255,255,255,0.7) !important; }
+.text-neutral-500, .text-neutral-600 { color: rgba(255,255,255,0.4) !important; }
+.text-neutral-400 { color: rgba(255,255,255,0.3) !important; }
+
+.border-neutral-200, .border-neutral-300 { border-color: rgba(255,255,255,0.1) !important; }
+.border-neutral-400 { border-color: rgba(255,255,255,0.15) !important; }
+
+/* Override bg-neutral-100 to dark for dashboard content */
+.dark .bg-neutral-100 { background-color: #111111 !important; }
+
+/* Page background override */
+[data-dashboard] {
+  background-color: #0a0a0a !important;
 }
 
 /* Inspiria Scrollbar */

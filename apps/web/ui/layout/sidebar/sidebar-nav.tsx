@@ -103,9 +103,10 @@ export function SidebarNav<T extends Record<any, any>>({
 }) {
   return (
     <div
-      className={cn(
-        "h-full w-[var(--sidebar-width)] transition-[width] duration-300",
-      )}
+            className={cn(
+              "relative h-full w-min max-w-full bg-[#0a0a0a] transition-transform lg:translate-x-0",
+              !isOpen && "-translate-x-full",
+            )}
       style={
         {
           "--sidebar-width": `${currentArea === null ? SIDEBAR_GROUPS_WIDTH : SIDEBAR_WIDTH}px`,
@@ -123,7 +124,7 @@ export function SidebarNav<T extends Record<any, any>>({
                   href="/"
                   className="block overflow-visible rounded-lg px-1 py-4 outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-black/50"
                 >
-                  <NavWordmark className="h-5 overflow-visible" isInApp />
+                  <NavWordmark variant="symbol" className="h-7 w-7 overflow-visible" isInApp />
                 </Link>
               </div>
               {(!currentArea ||
@@ -188,7 +189,7 @@ function SidebarAreasPanel<T extends Record<any, any>>({
   }, [currentArea, areas, data]);
 
   return (
-    <div className="flex h-full w-[calc(var(--sidebar-areas-width)-0.5rem)] flex-col rounded-xl bg-neutral-100">
+    <div className="flex h-full w-[calc(var(--sidebar-areas-width)-0.5rem)] flex-col rounded-xl bg-[#111111] border border-white/5">
       {/* Scrollable content with gradient overlay */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <div
@@ -199,7 +200,7 @@ function SidebarAreasPanel<T extends Record<any, any>>({
             hasOverflow ? "overflow-y-auto" : "overflow-hidden",
           )}
         >
-          <div className="relative flex flex-col p-3 text-neutral-500">
+          <div className="relative flex flex-col p-3 text-white/40">
             <div className="relative w-full grow">
               {Object.entries(areas).map(([area, areaConfig]) => {
                 const { title, backHref, content, direction } =
@@ -229,7 +230,7 @@ function SidebarAreasPanel<T extends Record<any, any>>({
                               <ChevronLeft className="size-3 [&_*]:stroke-2" />
                             </div>
                           )}
-                          <span className="text-content-emphasis text-lg font-semibold">
+                          <span className="text-lg font-semibold text-white/90">
                             {title}
                           </span>
                         </TitleContainer>
@@ -240,7 +241,7 @@ function SidebarAreasPanel<T extends Record<any, any>>({
                       {content.map(({ name, items }, idx) => (
                         <div key={idx} className="flex flex-col gap-0.5">
                           {name && (
-                            <div className="mb-2 pl-3 text-sm text-neutral-500">
+                            <div className="mb-2 pl-3 text-xs font-medium uppercase tracking-wider text-white/30">
                               {name}
                             </div>
                           )}
@@ -259,7 +260,7 @@ function SidebarAreasPanel<T extends Record<any, any>>({
         {/* Bottom scroll fade - shows when content overflows */}
         {hasOverflow && (
           <div
-            className="pointer-events-none absolute bottom-0 left-0 z-10 h-16 w-full rounded-b-lg bg-gradient-to-t from-neutral-100 to-transparent"
+            className="pointer-events-none absolute bottom-0 left-0 z-10 h-16 w-full rounded-b-lg bg-gradient-to-t from-[#111111] to-transparent"
             style={{ opacity: 1 - Math.pow(scrollProgress, 2) }}
           />
         )}
@@ -271,7 +272,7 @@ function SidebarAreasPanel<T extends Record<any, any>>({
           <div className="px-3 pb-2">
             <Link
               href={`/${data.slug}/settings/tracking`}
-              className="flex items-center gap-2 rounded-lg bg-neutral-200/75 px-2.5 py-2 text-xs text-neutral-700 transition-colors hover:bg-neutral-200"
+              className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-2.5 py-2 text-xs text-white/60 transition-colors hover:bg-white/10 hover:text-white/80"
             >
               <BookOpen className="size-4" />
               Set up conversion tracking
@@ -318,7 +319,7 @@ export function NavGroupTooltip({
       side="right"
       delayDuration={100}
       disabled={disabled}
-      className="rounded-lg bg-black px-3 py-1.5 text-sm font-medium text-white"
+      className="rounded-lg bg-[#1a1a1a] border border-white/10 px-3 py-1.5 text-sm font-medium text-white/90"
       content={
         <div>
           <span>{name}</span>
@@ -329,8 +330,8 @@ export function NavGroupTooltip({
               transition={{ delay: 0.5, duration: 0.25, type: "spring" }}
               className="overflow-hidden"
             >
-              <div className="w-44 py-1 text-xs tracking-tight">
-                <p className="text-content-muted">{description}</p>
+                <div className="w-44 py-1 text-xs tracking-tight">
+                  <p className="text-white/40">{description}</p>
                 {learnMoreHref && (
                   <div className="mt-2.5">
                     <Link
@@ -387,14 +388,14 @@ function NavGroupItem({
             onClick={onClick}
             className={cn(
               "relative flex size-11 items-center justify-center rounded-lg transition-colors duration-150",
-              "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+              "outline-none focus-visible:ring-2 focus-visible:ring-white/20",
               active
-                ? "bg-white"
-                : "hover:bg-bg-inverted/5 active:bg-bg-inverted/10",
+                ? "bg-white/10 border border-white/10"
+                : "hover:bg-white/5 active:bg-white/10",
             )}
           >
             <Icon
-              className="text-content-default size-5"
+              className="text-white/50 size-5"
               data-hovered={hovered}
             />
             {badge && (
@@ -439,13 +440,13 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
         onPointerEnter={() => !locked && setHovered(true)}
         onPointerLeave={() => !locked && setHovered(false)}
         className={cn(
-          "text-content-default group flex h-8 items-center justify-between rounded-lg p-2 text-sm leading-none transition-[background-color,color,font-weight] duration-75",
-          "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+          "text-white/50 group flex h-8 items-center justify-between rounded-lg p-2 text-sm leading-none transition-[background-color,color,font-weight] duration-75",
+          "outline-none focus-visible:ring-2 focus-visible:ring-white/20",
           isActive && !items
-            ? "bg-blue-100/50 font-medium text-blue-600 hover:bg-blue-100/80 active:bg-blue-100"
+            ? "bg-[#00FF99]/10 font-medium text-[#00FF99] hover:bg-[#00FF99]/15 active:bg-[#00FF99]/20"
             : locked
               ? "cursor-not-allowed opacity-75"
-              : "hover:bg-bg-inverted/5 active:bg-bg-inverted/10",
+              : "hover:bg-white/5 active:bg-white/10 hover:text-white/80",
         )}
         aria-disabled={locked}
       >
@@ -453,33 +454,33 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
           {locked ? (
             <Lock className="size-4" />
           ) : (
-            Icon && (
-              <Icon
-                className={cn(
-                  "size-4",
-                  !items && "group-data-[active=true]:text-blue-600",
-                )}
-                data-hovered={hovered}
-              />
-            )
+              Icon && (
+                <Icon
+                  className={cn(
+                    "size-4",
+                    !items && "group-data-[active=true]:text-[#00FF99]",
+                  )}
+                  data-hovered={hovered}
+                />
+              )
           )}
           {name}
         </span>
         <span className="ml-2 flex items-center gap-2">
           {"badge" in item && item.badge && (
             <span
-              className={cn(
-                "flex items-center justify-center rounded px-1.5 py-0.5 text-xs font-semibold",
+          className={cn(
+            "flex items-center justify-center rounded px-1.5 py-0.5 text-xs font-semibold",
                 isActive && !items
-                  ? "bg-blue-600 text-white"
-                  : "bg-blue-100 text-blue-600",
+                  ? "bg-[#00FF99] text-black"
+                  : "bg-white/10 text-white/70",
               )}
             >
               {item.badge}
             </span>
           )}
           {items && (
-            <ChevronDown className="size-3.5 text-neutral-500 transition-transform duration-75 group-data-[active=true]:rotate-180" />
+            <ChevronDown className="size-3.5 text-white/30 transition-transform duration-75 group-data-[active=true]:rotate-180" />
           )}
           {item.arrow && (
             <ArrowUpRight2 className="text-content-default size-3.5 transition-transform duration-75 group-hover:-translate-y-px group-hover:translate-x-px" />
@@ -500,7 +501,7 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
           >
             <div className="pl-px pt-1">
               <div className="pl-3.5">
-                <div className="flex flex-col gap-0.5 border-l border-neutral-200 pl-2">
+                <div className="flex flex-col gap-0.5 border-l border-white/10 pl-2">
                   {items.map((item) => (
                     <NavItem key={item.name} item={item} />
                   ))}

@@ -107,13 +107,13 @@ export function MainNav({
       </div>
       <div
         className={cn(
-          "bg-neutral-200 pb-[var(--page-bottom-margin)] pt-[var(--page-top-margin)] [--page-bottom-margin:0px] [--page-top-margin:0px] lg:pb-2 lg:pr-2 lg:[--page-bottom-margin:0.5rem] lg:[--page-top-margin:0.5rem]",
+          "bg-[#0a0a0a] pb-[var(--page-bottom-margin)] pt-[var(--page-top-margin)] [--page-bottom-margin:0px] [--page-top-margin:0px] lg:pb-2 lg:pr-2 lg:[--page-bottom-margin:0.5rem] lg:[--page-top-margin:0.5rem]",
           isUpgradeBannerVisible ? "mt-12 h-[calc(100vh-48px)]" : "h-screen",
         )}
       >
         <div
           id={DUB_DASHBOARD_MAIN_SCROLL_ID}
-          className="relative h-full overflow-y-auto bg-neutral-100 pt-px lg:rounded-xl lg:bg-white"
+          className="relative h-full overflow-y-auto bg-[#0a0a0a] pt-px lg:rounded-xl lg:bg-[#111111]"
         >
           <SideNavContext.Provider value={{ isOpen, setIsOpen }}>
             {children}

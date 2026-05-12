@@ -115,7 +115,7 @@ export function WorkspaceDropdown() {
 
 function WorkspaceDropdownPlaceholder() {
   return (
-    <div className="flex size-11 animate-pulse items-center gap-x-1.5 rounded-lg bg-neutral-300" />
+    <div className="flex size-11 animate-pulse items-center gap-x-1.5 rounded-lg bg-white/10" />
   );
 }
 
@@ -166,10 +166,9 @@ function WorkspaceList({
       <div
         ref={scrollRef}
         onScroll={updateScrollProgress}
-        className="w-xs max-h-84 relative w-full overflow-auto rounded-xl bg-white text-base sm:w-72 sm:text-sm"
+        className="w-xs max-h-84 relative w-full overflow-auto rounded-xl bg-[#111111] border border-white/10 text-base text-white/80 sm:w-72 sm:text-sm"
       >
-        {/* Current workspace section */}
-        <div className="flex flex-col gap-2.5 border-b border-neutral-200 px-3 pb-3 sm:p-3">
+        <div className="flex flex-col gap-2.5 border-b border-white/10 px-3 pb-3 sm:p-3">
           <div className="flex items-center gap-x-2.5">
             <BlurImage
               src={selected.image}
@@ -180,7 +179,7 @@ function WorkspaceList({
               draggable={false}
             />
             <div className="min-w-0">
-              <div className="truncate text-base font-medium leading-5 text-neutral-900 sm:text-sm">
+              <div className="truncate text-base font-medium leading-5 text-white sm:text-sm">
                 {selected.name}
               </div>
               {selected.slug && (
@@ -203,19 +202,19 @@ function WorkspaceList({
           <div className="flex flex-row gap-1">
             <Link
               href={`/${selected.slug ? selected.slug : "account"}/settings`}
-              className="flex items-center justify-start gap-x-2 rounded-lg border border-neutral-200 px-2 py-1 text-neutral-700 outline-none transition-all duration-75 hover:bg-neutral-100/50 focus-visible:ring-2 focus-visible:ring-black/50 active:bg-neutral-200/80"
+              className="flex items-center justify-start gap-x-2 rounded-lg border border-white/10 px-2 py-1 text-white/70 outline-none transition-all duration-75 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/20 active:bg-white/15"
               onClick={() => setOpenPopover(false)}
             >
-              <Gear className="size-4 text-neutral-800" />
+              <Gear className="size-4 text-white/60" />
               <span className="block truncate text-sm">Settings</span>
             </Link>
             {selected.slug && (
               <Link
                 href={`/${selected.slug}/settings/people`}
-                className="flex items-center justify-start gap-x-2 rounded-lg border border-neutral-200 px-2 py-1 text-neutral-700 outline-none transition-all duration-75 hover:bg-neutral-100/50 focus-visible:ring-2 focus-visible:ring-black/50 active:bg-neutral-200/80"
+                className="flex items-center justify-start gap-x-2 rounded-lg border border-white/10 px-2 py-1 text-white/70 outline-none transition-all duration-75 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/20 active:bg-white/15"
                 onClick={() => setOpenPopover(false)}
               >
-                <UserPlus className="size-4 text-neutral-800" />
+                <UserPlus className="size-4 text-white/60" />
                 <span className="block truncate text-sm">Invite members</span>
               </Link>
             )}
@@ -224,7 +223,7 @@ function WorkspaceList({
 
         {/* Workspaces section */}
         <div className="p-1">
-          <p className="px-2 py-2 text-xs font-medium text-neutral-500">
+          <p className="px-2 py-2 text-xs font-medium text-white/30">
             Workspaces
           </p>
           <div className="flex flex-col gap-0.5">
@@ -235,9 +234,9 @@ function WorkspaceList({
                   key={slug}
                   className={cn(
                     "relative flex w-full items-center gap-x-2 rounded-md px-2 py-2 transition-all duration-75",
-                    "hover:bg-neutral-200/50 active:bg-neutral-200/80",
-                    "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
-                    isActive && "bg-neutral-200/50",
+                    "hover:bg-white/5 active:bg-white/10",
+                    "outline-none focus-visible:ring-2 focus-visible:ring-white/20",
+                    isActive && "bg-white/10",
                   )}
                   href={href(slug)}
                   shallow={false}
@@ -251,11 +250,11 @@ function WorkspaceList({
                     className="size-5 shrink-0 overflow-hidden rounded-full"
                     draggable={false}
                   />
-                  <span className="block truncate text-base leading-5 text-neutral-900 sm:max-w-[140px] sm:text-sm">
+                  <span className="block truncate text-base leading-5 text-white/80 sm:max-w-[140px] sm:text-sm">
                     {name}
                   </span>
                   {selected.slug === slug ? (
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-black">
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#00FF99]">
                       <Check2 className="size-4" aria-hidden="true" />
                     </span>
                   ) : null}
@@ -268,9 +267,9 @@ function WorkspaceList({
                 setOpenPopover(false);
                 setShowAddWorkspaceModal(true);
               }}
-              className="group flex w-full cursor-pointer items-center gap-x-2.5 rounded-md p-2 text-neutral-700 transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80"
+              className="group flex w-full cursor-pointer items-center gap-x-2.5 rounded-md p-2 text-white/60 transition-all duration-75 hover:bg-white/10 active:bg-white/15"
             >
-              <Plus className="ml-0.5 size-4 text-neutral-500" />
+              <Plus className="ml-0.5 size-4 text-white/40" />
               <span className="block truncate">Create workspace</span>
             </button>
           </div>
@@ -278,7 +277,7 @@ function WorkspaceList({
       </div>
       {/* Bottom scroll fade */}
       <div
-        className="pointer-events-none absolute -bottom-px left-0 h-16 w-full rounded-b-lg bg-gradient-to-t from-white sm:bottom-0"
+        className="pointer-events-none absolute -bottom-px left-0 h-16 w-full rounded-b-lg bg-gradient-to-t from-[#111111] sm:bottom-0"
         style={{ opacity: 1 - Math.pow(scrollProgress, 2) }}
       />
     </div>
@@ -287,11 +286,11 @@ function WorkspaceList({
 
 const getPlanColor = (plan: string) =>
   plan === "enterprise"
-    ? "text-purple-700"
+    ? "text-purple-400"
     : plan === "advanced"
-      ? "text-amber-800"
+      ? "text-amber-400"
       : plan.startsWith("business")
-        ? "text-blue-900"
+        ? "text-blue-400"
         : plan === "pro"
-          ? "text-cyan-900"
-          : "text-neutral-500";
+          ? "text-cyan-400"
+          : "text-white/30";

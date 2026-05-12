@@ -103,20 +103,20 @@ export function UserDropdown() {
   return (
     <Popover
       content={
-        <div className="flex w-full flex-col space-y-px rounded-md bg-white p-2 sm:min-w-56">
+        <div className="flex w-full flex-col space-y-px rounded-md bg-[#111111] border border-white/10 p-2 sm:min-w-56">
           {session?.user ? (
             <div className="px-2 pb-4 sm:pb-2">
-              <p className="truncate text-base font-medium text-neutral-900 sm:text-sm">
+              <p className="truncate text-base font-medium text-white sm:text-sm">
                 {session.user.name || session.user.email?.split("@")[0]}
               </p>
-              <p className="truncate text-base text-neutral-500 sm:text-sm">
+              <p className="truncate text-base text-white/40 sm:text-sm">
                 {session.user.email}
               </p>
             </div>
           ) : (
             <div className="grid gap-2 px-2 py-3">
-              <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-200" />
-              <div className="h-3 w-20 animate-pulse rounded-full bg-neutral-200" />
+              <div className="h-3 w-12 animate-pulse rounded-full bg-white/10" />
+              <div className="h-3 w-20 animate-pulse rounded-full bg-white/10" />
             </div>
           )}
           {menuOptions.map((menuOption, idx) => (
@@ -171,11 +171,11 @@ function UserOption<T extends ElementType = "button">({
 
   return (
     <Component
-      className="flex items-center gap-x-4 rounded-md px-2.5 py-1.5 text-base transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80 sm:text-sm"
+      className="flex items-center gap-x-4 rounded-md px-2.5 py-1.5 text-base transition-all duration-75 hover:bg-white/10 active:bg-white/15 sm:text-sm"
       {...rest}
     >
-      <Icon className="size-5 text-neutral-500 sm:size-4" />
-      <span className="block truncate text-neutral-600">{label}</span>
+      <Icon className="size-5 text-white/40 sm:size-4" />
+      <span className="block truncate text-white/60">{label}</span>
       {children}
     </Component>
   );

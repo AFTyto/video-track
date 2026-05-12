@@ -50,7 +50,6 @@ import { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import { useParams, usePathname } from "next/navigation";
 import { ReactNode, useMemo } from "react";
-import { DubPartnersPopup } from "./dub-partners-popup";
 import { Compass } from "./icons/compass";
 import { ConnectedDots4 } from "./icons/connected-dots4";
 import { CursorRays } from "./icons/cursor-rays";
@@ -90,14 +89,14 @@ const NAV_GROUPS: SidebarNavGroups<SidebarNavData> = ({
     description:
       "Kickstart viral product-led growth with powerful, branded referral and affiliate programs.",
     learnMoreHref: "https://dub.co/partners",
-    icon: ConnectedDots4,
+      icon: ConnectedDots4,
     href: slug ? `/${slug}/program` : "/program",
     active:
       !!slug &&
       pathname.startsWith(`/${slug}`) &&
       !pathname.startsWith(`/${slug}/links`) &&
       !pathname.startsWith(`/${slug}/settings`),
-    popup: DubPartnersPopup,
+    popup: null as null,
   };
   const linksGroup = {
     id: "links",
@@ -127,7 +126,7 @@ const NAV_AREAS: SidebarNavAreas<SidebarNavData> = {
     pendingReferralsCount,
     partnerNetworkEnabled,
   }) => ({
-    title: "Partner Program",
+    title: "VideoTrack",
     showNews,
     direction: "left",
     content: [
@@ -289,7 +288,7 @@ const NAV_AREAS: SidebarNavAreas<SidebarNavData> = {
   }),
   // short links
   links: ({ slug, pathname, queryString, showNews }) => ({
-    title: "Short Links",
+    title: "Video Links",
     showNews,
     direction: "left",
     content: [
