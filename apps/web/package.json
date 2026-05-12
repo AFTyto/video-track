@@ -1,6 +1,7 @@
 {
   "name": "web",
   "private": true,
+  "//": "VideoTrack - Inspiria Studios",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "concurrently --kill-others \"pnpm prisma:generate && next dev --turbopack --port 8888\" \"pnpm prisma:generate && pnpm prisma:studio --browser none\"",
