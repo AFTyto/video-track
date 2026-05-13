@@ -5,7 +5,7 @@ import useWorkspace from "@/lib/swr/use-workspace";
 import { ProgramData } from "@/lib/types";
 import { Button, FileUpload, Input, useMediaQuery } from "@dub/ui";
 import { Plus } from "lucide-react";
-import { usePlausible } from "next-plausible";
+// Plausible analytics disabled
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";

@@ -1,5 +1,5 @@
-import { Axiom } from "@axiomhq/js";
-
-export const axiomClient = new Axiom({
-  token: process.env.AXIOM_TOKEN!,
-});
+// Axiom logging disabled for VideoTrack
+export const axiomClient = {
+  ingest: async () => {},
+  query: async () => ({ status: {} }),
+};

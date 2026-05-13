@@ -82,6 +82,8 @@ const SIDEBAR_WIDTH = 304;
 const SIDEBAR_GROUPS_WIDTH = 64;
 const SIDEBAR_AREAS_WIDTH = SIDEBAR_WIDTH - SIDEBAR_GROUPS_WIDTH;
 
+const isOpen = true;
+
 export function SidebarNav<T extends Record<any, any>>({
   groups,
   areas,

@@ -3,7 +3,7 @@
 import { MarkdownDescription } from "@/ui/shared/markdown-description";
 import { Button, DubProductIcon } from "@dub/ui";
 import { capitalize } from "@dub/utils";
-import { usePlausible } from "next-plausible";
+// Plausible analytics disabled
 import Image from "next/image";
 import { ReactNode } from "react";
 import { useOnboardingProgress } from "../../use-onboarding-progress";

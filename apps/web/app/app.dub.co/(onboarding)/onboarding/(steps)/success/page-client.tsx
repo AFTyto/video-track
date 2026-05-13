@@ -28,7 +28,7 @@ import {
 } from "@dub/ui";
 import { Slack } from "@dub/ui/icons";
 import { capitalize, cn, isWorkspaceBillingTrialActive } from "@dub/utils";
-import { usePlausible } from "next-plausible";
+// Plausible analytics disabled
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";

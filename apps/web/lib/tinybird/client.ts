@@ -1,6 +1,7 @@
-import { Tinybird } from "@chronark/zod-bird";
-
-export const tb = new Tinybird({
-  token: process.env.TINYBIRD_API_KEY as string,
-  baseUrl: process.env.TINYBIRD_API_URL as string,
-});
+// Tinybird analytics disabled for VideoTrack
+export const tb = {
+  pipe: async () => ({ data: [] }),
+  query: async () => ({ data: [] }),
+  buildPipe: async () => async () => ({ data: [] }),
+  buildIngestEndpoint: async () => async () => ({ success: true }),
+};

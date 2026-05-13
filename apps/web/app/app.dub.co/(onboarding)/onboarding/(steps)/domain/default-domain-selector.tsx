@@ -12,7 +12,7 @@ import {
   type Icon,
 } from "@dub/ui";
 import { capitalize, cn } from "@dub/utils";
-import { usePlausible } from "next-plausible";
+// Plausible analytics disabled
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { ReactNode } from "react";

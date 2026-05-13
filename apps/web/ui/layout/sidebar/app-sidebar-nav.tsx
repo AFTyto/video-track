@@ -24,11 +24,22 @@ import { useSession } from "next-auth/react";
 import { useParams, usePathname } from "next/navigation";
 import { ReactNode, useMemo } from "react";
 import { Compass } from "./icons/compass";
+import { ConnectedDots4 } from "./icons/connected-dots4";
 import { CursorRays } from "./icons/cursor-rays";
 import { Hyperlink } from "./icons/hyperlink";
 import { LinesY } from "./icons/lines-y";
 import { SidebarNav, SidebarNavAreas, SidebarNavGroups } from "./sidebar-nav";
 import { WorkspaceDropdown } from "./workspace-dropdown";
+
+const usePartnerMessagesCount = () => ({ count: 0 });
+const useFraudGroupCount = () => ({ fraudGroupCount: undefined });
+const useProgramReferralsCount = () => ({ data: undefined });
+const useProgramPayoutsCount = () => ({ data: undefined });
+const usePartnerApplicationsCount = () => ({ data: undefined });
+
+const pendingPayoutsCount = undefined;
+const applicationsCount = undefined;
+const program = undefined;
 
 type SidebarNavData = {
   slug: string;
@@ -439,8 +450,7 @@ export function AppSidebarNav({
         : "links";
   }, [slug, pathname]);
 
-  const submittedBountiesCount =
-    submissionsCount?.find(({ status }) => status === "submitted")?.count || 0;
+  const submittedBountiesCount = 0;
 
   const { count: unreadMessagesCount } = usePartnerMessagesCount({
     enabled: Boolean(currentArea === "program"),

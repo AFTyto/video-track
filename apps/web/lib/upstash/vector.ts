@@ -1,6 +1,5 @@
-import { Index } from "@upstash/vector";
-
-export const vectorIndex = new Index({
-  url: process.env.UPSTASH_VECTOR_REST_URL!,
-  token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
-});
+// Upstash Vector disabled for VideoTrack - using local database instead
+export const vectorIndex = {
+  upsert: async () => {},
+  query: async () => ({ vectors: [] }),
+};

@@ -1,7 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { usePlausible } from "next-plausible";
+// Plausible analytics disabled
+export const usePlausible = () => {};
 import { useEffect } from "react";
 
 export default function TrackSignup() {

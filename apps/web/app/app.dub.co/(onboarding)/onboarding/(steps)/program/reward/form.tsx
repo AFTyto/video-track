@@ -10,7 +10,7 @@ import { RewardQualityFieldIndicator } from "@/ui/partners/rewards/reward-qualit
 import type { EventType } from "@dub/prisma/client";
 import { AnimatedSizeContainer, Button, CircleCheckFill } from "@dub/ui";
 import { capitalize, cn } from "@dub/utils";
-import { usePlausible } from "next-plausible";
+// Plausible analytics disabled
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useId, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";

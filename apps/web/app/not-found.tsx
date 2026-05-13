@@ -1,3 +1,5 @@
+"use client";
+
 import { NewBackground } from "@/ui/shared/new-background";
 import { Wordmark } from "@dub/ui";
 import Link from "next/link";
