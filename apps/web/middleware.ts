@@ -1,11 +1,14 @@
-import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export const config = {
+  api: {
+    externalResolver: true,
+  },
   matcher: [
     "/((?!api/|_next/|_proxy/|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest).*)",
   ],
 };
 
-export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
+export default function middleware() {
   return NextResponse.next();
 }
