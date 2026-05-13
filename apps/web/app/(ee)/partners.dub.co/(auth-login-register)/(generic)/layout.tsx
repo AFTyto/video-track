@@ -1,5 +1,3 @@
-import { getProgram } from "@/lib/fetchers/get-program";
-import { getProgramSlugs } from "@/lib/fetchers/get-program-slugs";
 import { formatRewardDescription } from "@/ui/partners/format-reward-description";
 import { Grid } from "@dub/ui";
 import { cn, constructMetadata, PARTNERS_DOMAIN } from "@dub/utils";
@@ -41,11 +39,7 @@ export async function generateMetadata(props: {
 }
 
 export async function generateStaticParams() {
-  const programs = await getProgramSlugs();
-
-  return programs.map((program) => ({
-    programSlug: program.slug,
-  }));
+  return [];
 }
 
 export default async function PartnerAuthLayout(props: {

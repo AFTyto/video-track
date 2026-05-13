@@ -1,6 +1,4 @@
 import { getProgram } from "@/lib/fetchers/get-program";
-import { getProgramSlugs } from "@/lib/fetchers/get-program-slugs";
-import { DEFAULT_PARTNER_GROUP } from "@/lib/zod/schemas/groups";
 import { formatRewardDescription } from "@/ui/partners/format-reward-description";
 import { Wordmark } from "@dub/ui";
 import { APP_DOMAIN, PARTNERS_DOMAIN } from "@dub/utils";
@@ -38,12 +36,7 @@ export async function generateMetadata(props: {
 }
 
 export async function generateStaticParams() {
-  const programs = await getProgramSlugs();
-
-  return programs.map((program) => ({
-    programSlug: program.slug,
-    groupSlug: DEFAULT_PARTNER_GROUP.slug,
-  }));
+  return [];
 }
 
 export default async function ApplyLayout(
