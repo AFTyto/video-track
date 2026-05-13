@@ -9,7 +9,7 @@ import { CircleHalfDottedClock } from "@dub/ui";
 import { cn, constructMetadata } from "@dub/utils";
 import { redirect } from "next/navigation";
 
-export const revalidate = false; // cache indefinitely
+export const dynamic = "force-dynamic";
 
 export const metadata = constructMetadata({
   title: "Expired Link",
