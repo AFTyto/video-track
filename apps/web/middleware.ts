@@ -1,14 +1,8 @@
-import { NextResponse } from "next/server";
-
+// Empty middleware - all routing handled by Next.js pages
 export const config = {
-  api: {
-    externalResolver: true,
-  },
-  matcher: [
-    "/((?!api/|_next/|_proxy/|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest).*)",
-  ],
+  matcher: ["/"],
 };
 
 export default function middleware() {
-  return NextResponse.next();
+  return;
 }
