@@ -22,6 +22,7 @@
     "@date-fns/tz": "^1.4.1",
     "@dub/analytics": "^0.0.32",
     "@dub/embed-react": "workspace:*",
+    "@dub/email": "workspace:*",
     "@dub/prisma": "workspace:*",
     "@dub/tailwind-config": "workspace:*",
     "@dub/ui": "workspace:*",

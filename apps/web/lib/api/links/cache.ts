@@ -24,7 +24,14 @@ const linkLRUCache = new LRUCache<string, RedisLinkProps>({
  * Since LRUCache is not shared between Fluid instances,
  * we fallback to Vercel cache if both LRUCache/Redis are not available
  */
-export const vercelCache = getCache();
+let _vercelCache: ReturnType<typeof getCache> | null = null;
+
+function getVercelCache() {
+  if (!_vercelCache) {
+    _vercelCache = getCache();
+  }
+  return _vercelCache;
+}
 
 const VERCEL_CACHE_EXPIRATION = 60 * 5; // 5 minutes
 const REDIS_CACHE_EXPIRATION = 60 * 60 * 24;
@@ -97,7 +104,7 @@ class LinkCache {
     } catch (error) {
       console.error(`[Redis Cache Error] ${cacheKey} - ${error}`);
 
-      cachedLink = (await vercelCache.get(cacheKey)) as RedisLinkProps | null;
+      cachedLink = (await getVercelCache().get(cacheKey)) as RedisLinkProps | null;
       if (cachedLink) {
         console.log(`[Vercel Cache HIT] ${cacheKey}`);
         linkLRUCache.set(cacheKey, cachedLink);
@@ -119,7 +126,7 @@ class LinkCache {
       console.log(`Setting both LRU cache and Vercel cache for ${cacheKey}`);
       linkLRUCache.set(cacheKey, cachedLink);
       waitUntil(
-        vercelCache.set(cacheKey, cachedLink, {
+        getVercelCache().set(cacheKey, cachedLink, {
           ttl: VERCEL_CACHE_EXPIRATION,
         }),
       );
@@ -184,10 +191,11 @@ class LinkCache {
   // Vercel cache reads are 10x cheaper than writes, so to invalidate the cache
   // we check if the value is cached first before deleting it.
   private async _invalidateVercelRuntimeCache(cacheKey: string) {
-    return vercelCache
+    const vc = getVercelCache();
+    return vc
       .get(cacheKey)
       .then((cachedLink) =>
-        cachedLink ? vercelCache.delete(cacheKey) : undefined,
+        cachedLink ? vc.delete(cacheKey) : undefined,
       );
   }
 }

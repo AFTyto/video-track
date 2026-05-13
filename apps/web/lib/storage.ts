@@ -264,7 +264,23 @@ class StorageClient {
   }
 }
 
-export const storage = new StorageClient();
+let _storage: StorageClient | null = null;
+
+function getStorage() {
+  if (!_storage) {
+    _storage = new StorageClient();
+  }
+  return _storage;
+}
+
+// Proxy to lazily initialize StorageClient
+export const storage = {
+  upload: (...args: Parameters<StorageClient["upload"]>) => getStorage().upload(...args),
+  delete: (...args: Parameters<StorageClient["delete"]>) => getStorage().delete(...args),
+  getSignedUrl: (...args: Parameters<StorageClient["getSignedUrl"]>) => getStorage().getSignedUrl(...args),
+  getSignedUploadUrl: (...args: Parameters<StorageClient["getSignedUploadUrl"]>) => getStorage().getSignedUploadUrl(...args),
+  getSignedDownloadUrl: (...args: Parameters<StorageClient["getSignedDownloadUrl"]>) => getStorage().getSignedDownloadUrl(...args),
+};
 
 export const isStored = (url: string) => {
   return url.startsWith(R2_URL) || url.startsWith(OG_AVATAR_URL);

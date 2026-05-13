@@ -1,11 +1,18 @@
 /** @type {import('next').NextConfig} */
+import { PrismaPlugin } from "@prisma/nextjs-monorepo-workaround-plugin";
+
 const nextConfig = {
   reactStrictMode: false,
   typescript: {
     ignoreBuildErrors: true,
   },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()];
+    }
+    return config;
+  },
   transpilePackages: [
-    "prettier",
     "@dub/prisma",
     "@dub/utils",
     "@dub/ui",

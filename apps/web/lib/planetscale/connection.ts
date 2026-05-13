@@ -1,15 +1,21 @@
 import { neon, neonConfig } from "@neondatabase/serverless";
 
-neonConfig.fetchConnectionCache = true;
+let _sql: ReturnType<typeof neon> | null = null;
 
-const sql = neon(process.env.DATABASE_URL || "");
+function getSql() {
+  if (!_sql) {
+    neonConfig.fetchConnectionCache = true;
+    _sql = neon(process.env.DATABASE_URL || "");
+  }
+  return _sql;
+}
 
 const neonQuery = (strings: TemplateStringsArray, ...values: any[]) => {
-  return sql(strings, ...values);
+  return getSql()(strings, ...values);
 };
 
 neonQuery.execute = async (strings: TemplateStringsArray, ...values: any[]) => {
-  const result = await sql(strings, ...values);
+  const result = await getSql()(strings, ...values);
   return { rows: result };
 };
 
