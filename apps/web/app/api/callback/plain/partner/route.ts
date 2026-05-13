@@ -1,4 +1,4 @@
-import { plain } from "@/lib/plain/client";
+import { getPlain } from "@/lib/plain/client";
 import { upsertPlainCustomer } from "@/lib/plain/upsert-plain-customer";
 import { prisma } from "@dub/prisma";
 import {
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     payoutsEnabledAt,
   } = partnerProfile;
 
-  await plain.addCustomerToCustomerGroups({
+  await getPlain().addCustomerToCustomerGroups({
     customerId: customer.id,
     customerGroupIdentifiers: [
       {

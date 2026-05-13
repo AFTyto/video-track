@@ -2,20 +2,26 @@ import { log } from "@dub/utils";
 import { Receiver } from "@upstash/qstash";
 import { DubApiError } from "../api/errors";
 
-// we're using Upstash's Receiver to verify the request signature
-const receiver = new Receiver({
-  currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY || "",
-  nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY || "",
-});
+// lazily initialize receiver to avoid build-time errors
+let _receiver: Receiver | null = null;
+
+function getReceiver(): Receiver {
+  if (!_receiver) {
+    _receiver = new Receiver({
+      currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY || "",
+      nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY || "",
+    });
+  }
+  return _receiver;
+}
 
 export const verifyQstashSignature = async ({
   req,
   rawBody,
 }: {
   req: Request;
-  rawBody: string; // Make sure to pass the raw body not the parsed JSON
+  rawBody: string;
 }) => {
-  // skip verification in local development
   if (process.env.VERCEL !== "1") {
     return;
   }
@@ -28,6 +34,8 @@ export const verifyQstashSignature = async ({
       message: "Upstash-Signature header not found.",
     });
   }
+
+  const receiver = getReceiver();
 
   const isValid = await receiver.verify({
     signature,

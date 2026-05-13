@@ -17,9 +17,11 @@ import { RewardfulApi } from "./api";
 import { rewardfulImporter } from "./importer";
 import { RewardfulImportPayload } from "./types";
 
-const stripe = stripeAppClient({
-  ...(process.env.VERCEL_ENV && { mode: "live" }),
-});
+function getStripeClient() {
+  return stripeAppClient({
+    ...(process.env.VERCEL_ENV && { mode: "live" }),
+  });
+}
 
 export async function importCampaigns(payload: RewardfulImportPayload) {
   const { programId, campaignIds } = payload;
@@ -175,7 +177,7 @@ export async function importCampaigns(payload: RewardfulImportPayload) {
 
       if (program.workspace.stripeConnectId) {
         try {
-          const stripeCoupon = await stripe.coupons.retrieve(
+          const stripeCoupon = await getStripeClient().coupons.retrieve(
             campaign.stripe_coupon_id,
             {
               stripeAccount: program.workspace.stripeConnectId,

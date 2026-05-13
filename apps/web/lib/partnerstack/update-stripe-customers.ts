@@ -10,9 +10,11 @@ import { PartnerStackImportPayload } from "./types";
 
 const CUSTOMERS_PER_BATCH = 20;
 
-const stripe = stripeAppClient({
-  ...(process.env.VERCEL_ENV && { mode: "live" }),
-});
+function getStripeClient() {
+  return stripeAppClient({
+    ...(process.env.VERCEL_ENV && { mode: "live" }),
+  });
+}
 
 // PartnerStack API doesn't return the Stripe customer ID,
 // so we'll search for Stripe customers by email and update the customer record with the Stripe customer ID, if found.
@@ -149,7 +151,7 @@ async function searchStripeAndUpdateCustomer({
   } as const;
 
   try {
-    const stripeCustomers = await stripe.customers.search(
+    const stripeCustomers = await getStripeClient().customers.search(
       {
         query: `email:'${customer.email}'`,
         expand: ["data.subscriptions"],

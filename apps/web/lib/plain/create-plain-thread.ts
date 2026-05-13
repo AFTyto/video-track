@@ -1,5 +1,5 @@
 import { CreateThreadInput } from "@team-plain/typescript-sdk";
-import { plain, PlainUser } from "./client";
+import { getPlain, PlainUser } from "./client";
 import { upsertPlainCustomer } from "./upsert-plain-customer";
 
 export const createPlainThread = async ({
@@ -22,7 +22,7 @@ export const createPlainThread = async ({
     throw new Error("Failed to upsert plain customer");
   }
 
-  const { data, error } = await plain.createThread({
+  const { data, error } = await getPlain().createThread({
     customerIdentifier: {
       customerId: upsertResult.customer.id,
     },

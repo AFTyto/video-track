@@ -1,9 +1,16 @@
 import { APP_DOMAIN_WITH_NGROK, log } from "@dub/utils";
 import { Client } from "@upstash/workflow";
 
-const client = new Client({
-  token: process.env.QSTASH_TOKEN || "",
-});
+let _client: Client | null = null;
+
+function getClient(): Client {
+  if (!_client) {
+    _client = new Client({
+      token: process.env.QSTASH_TOKEN || "",
+    });
+  }
+  return _client;
+}
 
 const WORKFLOW_RETRIES = 3;
 const WORKFLOW_PARALLELISM = 20;
@@ -22,7 +29,7 @@ export async function triggerWorkflows(
   try {
     const workflows = Array.isArray(input) ? input : [input];
 
-    const results = await client.trigger(
+    const results = await getClient().trigger(
       workflows.map((workflow) => ({
         url: `${APP_DOMAIN_WITH_NGROK}/api/workflows/${workflow.workflowId}`,
         body: workflow.body,

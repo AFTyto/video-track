@@ -1,4 +1,4 @@
-import { plain, PlainUser } from "./client";
+import { getPlain, PlainUser } from "./client";
 
 export const upsertPlainCustomer = async (
   user: PlainUser & { email: string },
@@ -6,7 +6,7 @@ export const upsertPlainCustomer = async (
   const fullName = user.name || user.email;
   const shortName = user.name || user.email.split("@")[0];
 
-  return await plain.upsertCustomer({
+  return await getPlain().upsertCustomer({
     identifier: {
       emailAddress: user.email,
     },

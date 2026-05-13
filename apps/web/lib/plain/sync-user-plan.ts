@@ -1,6 +1,6 @@
 import { prisma } from "@dub/prisma";
 import { isGenericEmail } from "../is-generic-email";
-import { plain, PlainUser } from "./client";
+import { getPlain, PlainUser } from "./client";
 import { upsertPlainCustomer } from "./upsert-plain-customer";
 
 export const syncUserPlanToPlain = async (user: PlainUser) => {
@@ -53,6 +53,8 @@ export const syncUserPlanToPlain = async (user: PlainUser) => {
     console.log(`No workspace found for user ${user.email}, skipping sync...`);
     return;
   }
+
+  const plain = getPlain();
 
   await Promise.allSettled([
     plain.addCustomerToCustomerGroups({

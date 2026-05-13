@@ -1,5 +1,5 @@
 import { withSession } from "@/lib/auth";
-import { plain } from "@/lib/plain/client";
+import { getPlain } from "@/lib/plain/client";
 import { upsertPlainCustomer } from "@/lib/plain/upsert-plain-customer";
 import { AttachmentType } from "@team-plain/typescript-sdk";
 
@@ -78,7 +78,7 @@ export const POST = withSession(async ({ req, session }) => {
     return new Response("Failed to resolve support customer", { status: 500 });
   }
 
-  const { data, error } = await plain.createAttachmentUploadUrl({
+  const { data, error } = await getPlain().createAttachmentUploadUrl({
     attachmentType: AttachmentType.CustomTimelineEntry,
     customerId: customerData.customer.id,
     fileName,
