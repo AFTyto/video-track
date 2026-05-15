@@ -125,8 +125,8 @@ apps/web/app/(ee)/api/oauth/
 # Stripe App package
 packages/stripe-app/
 
-# Plans directory (internal docs)
-PLANS/
+# Plans directory (internal docs - root only)
+/PLANS/
 
 # App features no esenciales
 apps/web/app/(ee)/app.dub.co/(new-program)/
