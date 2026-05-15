@@ -4,6 +4,9 @@
   "//": "VideoTrack - Inspiria Studios - Simplified",
   "license": "AGPL-3.0-or-later",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "concurrently --kill-others \"pnpm prisma:generate && next dev --turbopack --port 8888\" \"pnpm prisma:generate && pnpm prisma:studio --browser none\"",
     "build": "pnpm prisma:generate && next build",
