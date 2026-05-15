@@ -21,6 +21,7 @@ dist/
 # local env files
 .env*.local
 .env
+.env.*
 
 # vercel
 .vercel
@@ -51,3 +52,87 @@ playwright-report/
 **/playwright/.auth/
 test-results/
 blob-report/
+
+# ==========================================
+# NON-ESSENTIAL FEATURES (MVP REDUCTION)
+# ==========================================
+# These files are kept locally but excluded from git
+# to reduce build size for Vercel deployment
+
+# Partner/Affiliate System
+apps/web/app/(ee)/partners.dub.co/
+apps/web/app/(ee)/api/partners/
+apps/web/app/(ee)/api/programs/
+apps/web/app/(ee)/api/bounties/
+apps/web/app/(ee)/api/campaigns/
+apps/web/app/(ee)/api/commissions/
+
+# Cron Jobs (80+ endpoints)
+apps/web/app/(ee)/api/cron/
+
+# Payment Processing
+apps/web/app/(ee)/api/stripe/
+apps/web/app/(ee)/api/paypal/
+apps/web/app/(ee)/api/payouts/
+apps/web/app/(ee)/app.dub.co/invoices/
+
+# Advanced Admin Features
+apps/web/app/(ee)/admin.dub.co/(dashboard)/analytics/
+apps/web/app/(ee)/admin.dub.co/(dashboard)/commissions/
+apps/web/app/(ee)/admin.dub.co/(dashboard)/partners/
+apps/web/app/(ee)/admin.dub.co/(dashboard)/payouts/
+apps/web/app/(ee)/admin.dub.co/(dashboard)/programs/
+apps/web/app/(ee)/admin.dub.co/(dashboard)/revenue/
+apps/web/app/(ee)/admin.dub.co/(dashboard)/events/
+apps/web/app/(ee)/api/admin/
+
+# Third-Party Integrations
+apps/web/app/(ee)/api/hubspot/
+apps/web/app/(ee)/api/shopify/
+apps/web/app/(ee)/api/slack/
+apps/web/app/(ee)/api/singular/
+apps/web/app/(ee)/api/appsflyer/
+apps/web/app/(ee)/api/scim/
+
+# E2E Testing & Mock
+apps/web/app/(ee)/api/e2e/
+apps/web/app/(ee)/api/mock/
+
+# Non-Essential APIs
+apps/web/app/(ee)/api/audit-logs/
+apps/web/app/(ee)/api/fraud/
+apps/web/app/(ee)/api/embed/
+apps/web/app/(ee)/api/network/
+apps/web/app/(ee)/api/workflows/
+apps/web/app/(ee)/api/rewards/
+apps/web/app/(ee)/api/groups/
+apps/web/app/(ee)/api/discount-codes/
+apps/web/app/(ee)/api/email-domains/
+apps/web/app/(ee)/api/messages/
+apps/web/app/(ee)/api/partner-profile/
+apps/web/app/(ee)/api/track/
+
+# Onboarding (no esencial MVP)
+apps/web/app/app.dub.co/onboarding/
+
+# App Embed
+apps/web/app/app.dub.co/embed/
+apps/web/app/(ee)/api/embed/
+
+# OAuth avanzado
+apps/web/app/(ee)/api/oauth/
+
+# Stripe App package
+packages/stripe-app/
+
+# Plans directory (internal docs)
+PLANS/
+
+# App features no esenciales
+apps/web/app/(ee)/app.dub.co/(new-program)/
+apps/web/app/(ee)/app.dub.co/embed/
+
+# Packages no esenciales para MVP
+packages/tinybird/
+packages/cli/
+packages/hubspot-app/
