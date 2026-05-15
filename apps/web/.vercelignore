@@ -1,0 +1,65 @@
+# Partner System
+app/(ee)/partners.dub.co/**/*
+app/(ee)/api/partners/**/*
+app/(ee)/api/programs/**/*
+app/(ee)/api/bounties/**/*
+app/(ee)/api/campaigns/**/*
+app/(ee)/api/commissions/**/*
+
+# Cron Jobs
+app/(ee)/api/cron/**/*
+
+# Payments
+app/(ee)/api/stripe/**/*
+app/(ee)/api/paypal/**/*
+app/(ee)/api/payouts/**/*
+app/(ee)/app.dub.co/invoices/**/*
+
+# Admin Avanzado
+app/(ee)/admin.dub.co/(dashboard)/analytics/**/*
+app/(ee)/admin.dub.co/(dashboard)/commissions/**/*
+app/(ee)/admin.dub.co/(dashboard)/partners/**/*
+app/(ee)/admin.dub.co/(dashboard)/payouts/**/*
+app/(ee)/admin.dub.co/(dashboard)/programs/**/*
+app/(ee)/admin.dub.co/(dashboard)/revenue/**/*
+app/(ee)/admin.dub.co/(dashboard)/events/**/*
+app/(ee)/api/admin/**/*
+
+# Integraciones
+app/(ee)/api/hubspot/**/*
+app/(ee)/api/shopify/**/*
+app/(ee)/api/slack/**/*
+app/(ee)/api/singular/**/*
+app/(ee)/api/appsflyer/**/*
+app/(ee)/api/scim/**/*
+
+# E2E y Mock
+app/(ee)/api/e2e/**/*
+app/(ee)/api/mock/**/*
+
+# Features No Esenciales
+app/(ee)/api/audit-logs/**/*
+app/(ee)/api/fraud/**/*
+app/(ee)/api/embed/**/*
+app/(ee)/api/network/**/*
+app/(ee)/api/workflows/**/*
+app/(ee)/api/rewards/**/*
+app/(ee)/api/groups/**/*
+app/(ee)/api/discount-codes/**/*
+app/(ee)/api/email-domains/**/*
+app/(ee)/api/domains/register/**/*
+app/(ee)/api/domains/status/**/*
+app/(ee)/api/messages/**/*
+app/(ee)/api/customers/export/**/*
+app/(ee)/api/partner-profile/**/*
+app/(ee)/api/track/**/*
+
+# Onboarding (no esencial para MVP)
+app/app.dub.co/onboarding/**/*
+
+# App Embed
+app/app.dub.co/embed/**/*
+app/(ee)/api/embed/**/*
+
+# OAuth avanzado
+app/(ee)/api/oauth/**/*
